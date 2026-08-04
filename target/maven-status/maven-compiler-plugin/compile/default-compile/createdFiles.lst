@@ -1,0 +1,9 @@
+com\aeropelican\userservice\repository\UserRepository.class
+com\aeropelican\userservice\dto\request\UserCreateRequestDTO.class
+com\aeropelican\userservice\service\UserService.class
+com\aeropelican\userservice\controller\UserController.class
+com\aeropelican\userservice\entity\User$UserBuilder.class
+com\aeropelican\userservice\enums\UserEnums.class
+com\aeropelican\userservice\mapper\UserMapper.class
+com\aeropelican\userservice\entity\User.class
+com\aeropelican\userservice\UserServiceApplication.class
