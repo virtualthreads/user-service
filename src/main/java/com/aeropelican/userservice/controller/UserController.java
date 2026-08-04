@@ -1,11 +1,14 @@
 package com.aeropelican.userservice.controller;
+import com.aeropelican.userservice.dto.request.PageRequestDTO;
 import com.aeropelican.userservice.dto.request.UserCreateRequestDTO;
 import com.aeropelican.userservice.dto.request.UserUpdateRequestDTO;
 import com.aeropelican.userservice.dto.response.ApiResponse;
+import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.response.UserResponseDTO;
 import com.aeropelican.userservice.entity.User;
 import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,13 @@ public class UserController {
                         .message("User found successfully")
                         .data(user)
                         .build());
+    }
+    @GetMapping
+    public ResponseEntity<PageResponse<UserResponseDTO>> getAllUsers(
+            @Valid PageRequestDTO requestDTO) {
+
+        PageResponse<UserResponseDTO> response = userService.usersList(requestDTO);
+        return ResponseEntity.ok(response);
     }
 
     // Create User

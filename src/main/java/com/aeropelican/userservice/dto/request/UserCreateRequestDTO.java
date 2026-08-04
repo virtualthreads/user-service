@@ -7,17 +7,21 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class UserCreateRequestDTO {
-    @NotBlank
+    @NotBlank(message = "First name is required")
+    @Size(max = 100, message = "First name cannot exceed 100 characters")
     private String firstName;
+    @NotBlank
+    @Size(max = 100, message = "Last name cannot exceed 100 characters")
     private String lastName;
-    @NotBlank
-    @Email
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email cannot exceed 255 characters")
     private String email;
-    @Pattern(regexp = "[0-9]",
-            message = "Phone number contains 10 digits")
+    @Pattern(regexp = "^[6-9]\\d{9}$",
+            message = "Phone number must be a valid 10-digit Indian mobile number")
     private String phoneNumber;
-    @NotBlank
-    @Size(min = 8)
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, max = 255, message = "Password must be at least 8 characters")
     private String password;
     private Gender gender;
     @PastOrPresent

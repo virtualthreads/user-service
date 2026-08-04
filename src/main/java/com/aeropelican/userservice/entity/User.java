@@ -19,57 +19,39 @@ import java.util.UUID;
         @Id
         @Column(name = "user_id")
         private UUID userId;
-
-        @NotBlank(message = "First name is required")
-        @Size(max = 100, message = "First name cannot exceed 100 characters")
-        @Column(name = "first_name", nullable = false)
+        @Column(name = "first_name")
         private String firstName;
-
-        @Size(max = 100, message = "Last name cannot exceed 100 characters")
         @Column(name = "last_name")
         private String lastName;
-
-        @NotBlank(message = "Email is required")
-        @Email(message = "Invalid email format")
-        @Size(max = 255, message = "Email cannot exceed 255 characters")
-        @Column(name = "email", nullable = false, unique = true)
+        @Column(name = "email", unique = true)
         private String email;
-
-        @Pattern(regexp = "^[6-9]\\d{9}$",
-                message = "Phone number must be a valid 10-digit Indian mobile number")
         @Column(name = "phone_number")
         private String phoneNumber;
-
-        @NotBlank(message = "Password is required")
-        @Size(min = 8, max = 255, message = "Password must be at least 8 characters")
-        @Column(name = "password_hash", nullable = false)
+        @Column(name = "password_hash")
         private String passwordHash;
-
         @Enumerated(EnumType.STRING)
         @Column(name = "gender")
         private Gender gender;
-
         @PastOrPresent(message = "Date of birth cannot be a future date")
         @Column(name = "date_of_birth")
         private LocalDate dateOfBirth;
-
         @Builder.Default
-        @Column(name = "email_verified", nullable = false)
+        @Column(name = "email_verified")
         private Boolean emailVerified = false;
 
         @Builder.Default
-        @Column(name = "phone_verified", nullable = false)
+        @Column(name = "phone_verified")
         private Boolean phoneVerified = false;
 
         @Builder.Default
         @Enumerated(EnumType.STRING)
-        @Column(name = "status", nullable = false)
+        @Column(name = "status")
         private UserStatus status = UserStatus.ACTIVE;
 
-        @Column(name = "created_at", nullable = false, updatable = false)
+        @Column(name = "created_at")
         private LocalDateTime createdAt;
 
-        @Column(name = "updated_at", nullable = false)
+        @Column(name = "updated_at")
         private LocalDateTime updatedAt;
 
         @PrePersist
