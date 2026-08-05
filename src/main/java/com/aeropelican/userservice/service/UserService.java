@@ -10,6 +10,7 @@ import com.aeropelican.userservice.mapper.PageResponseMapper;
 import com.aeropelican.userservice.mapper.UserMapper;
 import com.aeropelican.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +21,12 @@ import java.util.List;
 import java.util.UUID;
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
         // Get User By Id
         public UserResponseDTO getUser(UUID userId) {
+            log.info("Request to fetch user by id:");
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserNotFound("User not found"));
             return UserMapper.toResponseDTO(user);
@@ -31,7 +34,7 @@ public class UserService {
 
         // Get Users List
         public PageResponse<UserResponseDTO> usersList(PageRequestDTO requestDTO) {
-
+            log.info("Fetching all users");
             Sort sort = requestDTO.getSortDir().equalsIgnoreCase("DESC")
                     ? Sort.by(requestDTO.getSortBy()).descending()
                     : Sort.by(requestDTO.getSortBy()).ascending();
@@ -53,6 +56,8 @@ public class UserService {
 
         // Create User
         public UserResponseDTO registerUser(UserCreateRequestDTO request){
+            log.info("Creating user with name");
+
             User user = new User();
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
@@ -62,14 +67,15 @@ public class UserService {
             user.setGender(request.getGender());
             user.setDateOfBirth(request.getDateOfBirth());
             User savedUser = userRepository.save(user);
+            log.info("Role created successfully with id: {}", savedUser.getUserId());
             return UserMapper.toResponseDTO(savedUser);
         }
 
         public UserResponseDTO updateUser(UUID userId, UserUpdateRequestDTO request) {
-
+            log.info("Updating role with id: {}", userId);
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserNotFound("User not found"));
-
+            log.error("Role not found with id: {}", userId);
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
             user.setEmail(request.getEmail());
@@ -83,7 +89,7 @@ public class UserService {
             user.setDateOfBirth(request.getDateOfBirth());
 
             User updatedUser = userRepository.save(user);
-
+            log.info("Role updated successfully with id: {}", userId);
             return UserMapper.toResponseDTO(updatedUser);
     }
     public UserResponseDTO deleteUser(UUID userId) {
@@ -94,6 +100,7 @@ public class UserService {
         }
         user.setStatus(UserStatus.DELETED);
         User deletedUser = userRepository.save(user);
+        log.info("Role deleted successfully with id: {}", userId);
         return UserMapper.toResponseDTO(deletedUser);
     }
 }

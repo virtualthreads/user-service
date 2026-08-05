@@ -15,7 +15,7 @@ import java.sql.Timestamp;
         public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(
                 UserNotFound ex,
                 HttpServletRequest request) {
-             log.error("Class not found exception occured");
+             log.error("Class not found exception occured:");
             ApiError error = ApiError.builder()
                     .status(HttpStatus.NOT_FOUND.value())
                     .error(HttpStatus.NOT_FOUND.getReasonPhrase())

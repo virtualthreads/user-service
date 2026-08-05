@@ -10,6 +10,7 @@ import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
     private final UserService userService;
     private UserRepository userRepository;
@@ -26,6 +28,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getUser(
             @PathVariable UUID userId) {
+        log.info("Received request to search user");
         UserResponseDTO user = userService.getUser(userId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.<UserResponseDTO>builder()
@@ -37,7 +40,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<PageResponse<UserResponseDTO>> getAllUsers(
             @Valid PageRequestDTO requestDTO) {
-
+        log.info("Received request to display all users");
         PageResponse<UserResponseDTO> response = userService.usersList(requestDTO);
         return ResponseEntity.ok(response);
     }
@@ -46,9 +49,9 @@ public class UserController {
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponseDTO>> registerUser(
             @RequestBody UserCreateRequestDTO requestDTO) {
-
+        log.info("Received request to create user");
         UserResponseDTO user = userService.registerUser(requestDTO);
-
+        log.info("Returning response for created user");
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<UserResponseDTO>builder()
                         .success(true)
@@ -62,6 +65,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
             @PathVariable UUID userId,
             @RequestBody UserUpdateRequestDTO request) {
+        log.info("Received request to update user {}", userId);
+
 
         UserResponseDTO user = userService.updateUser(userId, request);
 
@@ -77,6 +82,7 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponseDTO>> deleteUser(
             @PathVariable UUID userId) {
+        log.info("Received request to delete user {}", userId);
 
         UserResponseDTO user = userService.deleteUser(userId);
 
