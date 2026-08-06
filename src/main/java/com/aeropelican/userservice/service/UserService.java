@@ -78,7 +78,6 @@ public class UserService {
             log.error("Role not found with id: {}", userId);
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
-            user.setEmail(request.getEmail());
             user.setPhoneNumber(request.getPhoneNumber());
 
             if (request.getPassword() != null && !request.getPassword().isBlank()) {

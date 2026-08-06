@@ -22,8 +22,12 @@ public class UserCreateRequestDTO {
     private String phoneNumber;
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 255, message = "Password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,20}$",
+            message = "Password must contain uppercase, lowercase, number and special character"
+    )
     private String password;
     private Gender gender;
-    @PastOrPresent
+    @Past
     private LocalDate dateOfBirth;
 }

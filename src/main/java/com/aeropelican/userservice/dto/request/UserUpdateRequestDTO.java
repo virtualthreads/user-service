@@ -27,13 +27,6 @@ public class UserUpdateRequestDTO {
         @NotBlank(message = "Email is required")
         @Email(message = "Enter a valid email address")
         @Size(max = 100, message = "Email cannot exceed 100 characters")
-        private String email;
-
-        @NotBlank(message = "Phone number is required")
-        @Pattern(
-                regexp = "^[6-9]\\d{9}$",
-                message = "Phone number must be a valid 10-digit Indian mobile number"
-        )
         private String phoneNumber;
 
         @NotNull(message = "Gender is required")

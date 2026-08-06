@@ -42,7 +42,7 @@ public class AddressService {
         log.info("User found successfully : {}", userId);
         if (Boolean.TRUE.equals(requestDTO.getIsDefault())) {
 
-            addressRepository.findByUserIdAndIsDefaultTrue(userId.toString())
+            addressRepository.findByUserIdAndIsDefaultTrue(userId)
                     .ifPresent(existingDefault -> {
 
                         existingDefault.setIsDefault(false);
@@ -54,7 +54,7 @@ public class AddressService {
                     });
         }
 
-        Address address = AddressMapper.toEntity(requestDTO, user.getUserId().toString());
+        Address address = AddressMapper.toEntity(requestDTO, user.getUserId());
 
         Address savedAddress = addressRepository.save(address);
 
@@ -92,7 +92,7 @@ public class AddressService {
                             "User not found with ID : " + userId);
                 });
 
-        List<Address> addresses = addressRepository.findByUserId(userId.toString());
+        List<Address> addresses = addressRepository.findByUserId(userId);
 
         log.info("Total {} address(es) found for User ID : {}",
                 addresses.size(), userId);
@@ -115,7 +115,7 @@ public class AddressService {
                 });
         if (Boolean.TRUE.equals(requestDTO.getIsDefault())) {
 
-            addressRepository.findByUserIdAndIsDefaultTrue(address.getUserId().toString())
+            addressRepository.findByUserIdAndIsDefaultTrue(address.getUserId())
                     .ifPresent(existingDefault -> {
 
                         if (!existingDefault.getAddressId()
@@ -170,10 +170,10 @@ public class AddressService {
                             "Address not found with ID : " + addressId);
                 });
 
-        String userId = address.getUserId();
+        UUID userId = address.getUserId();
 
         // Remove default from existing default address
-        addressRepository.findByUserIdAndIsDefaultTrue(userId.toString())
+        addressRepository.findByUserIdAndIsDefaultTrue(userId)
                 .ifPresent(defaultAddress -> {
 
                     if (!defaultAddress.getAddressId().equals(addressId)) {
@@ -210,7 +210,7 @@ public class AddressService {
                             "Address not found with ID : " + addressId);
                 });
 
-        String userId = address.getUserId();
+        UUID userId = address.getUserId();
         long addressCount = addressRepository.countByUserId(userId);
         // Do not allow deleting the only default address
         if (Boolean.TRUE.equals(address.getIsDefault()) && addressCount == 1) {

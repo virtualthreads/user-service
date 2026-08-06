@@ -14,7 +14,7 @@ public class AddressResponseDTO {
 
     private UUID addressId;
 
-    private String userId;
+    private UUID userId;
 
     private AddressType addressType;
 

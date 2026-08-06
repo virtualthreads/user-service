@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Slf4j
-@Validated
+@Valid
 public class AddressController {
 
     private final AddressService addressService;

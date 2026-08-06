@@ -16,11 +16,11 @@ import java.util.UUID;
 public class Address {
 
         @Id
-        @Column(name = "address_id", updatable = false, nullable = false, columnDefinition = "VARCHAR(36)")
+        @Column(name = "address_id", updatable = false, nullable = false,length = 36)
         private UUID addressId;
 
-        @Column(name = "user_id")
-        private String userId;
+        @Column(name = "user_id",nullable = false,length = 36)
+        private UUID userId;
 
         @Enumerated(EnumType.STRING)
         @Column(name = "address_type", nullable = false)

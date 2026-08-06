@@ -14,15 +14,12 @@ import java.util.UUID;
     @Builder
     public class UserRole {
     @Id
-    @Column(name = "user_role_id", nullable = false)
+    @Column(name = "user_role_id", nullable = false,length = 36)
     private UUID userRoleId;
-
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false,length = 36)
     private UUID userId;
-
-    @Column(name = "role_id", nullable = false)
+    @Column(name = "role_id", nullable = false,length = 36)
     private UUID roleId;
-
     @Column(name = "assigned_at", nullable = false, updatable = false)
     private LocalDateTime assignedAt;
 

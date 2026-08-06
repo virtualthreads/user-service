@@ -8,11 +8,11 @@ import java.util.UUID;
 
     @Repository
     public interface AddressRepository extends JpaRepository<Address, UUID> {
-        List<Address> findByUserId(String userId);
-        Optional<Address> findByAddressIdAndUserId(UUID addressId, String userId);
-        boolean existsByAddressIdAndUserId(UUID addressId, String userId);
-        Optional<Address> findByUserIdAndIsDefaultTrue(String userId);
-        long countByUserId(String userId);
+        List<Address> findByUserId(UUID userId);
+        Optional<Address> findByAddressIdAndUserId(UUID addressId, UUID userId);
+        boolean existsByAddressIdAndUserId(UUID addressId, UUID userId);
+        Optional<Address> findByUserIdAndIsDefaultTrue(UUID userId);
+        long countByUserId(UUID userId);
 
 
 }

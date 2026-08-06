@@ -7,7 +7,7 @@ public class AddressMapper {
 
     private AddressMapper() {
     }
-    public static Address toEntity(AddressCreateRequestDTO requestDTO, String userId) {
+    public static Address toEntity(AddressCreateRequestDTO requestDTO, UUID userId) {
 
         return Address.builder()
                 .addressId(UUID.randomUUID())
@@ -50,7 +50,7 @@ public class AddressMapper {
 
         return AddressResponseDTO.builder()
                 .addressId(entity.getAddressId())
-                .userId(entity.getUserId().toString())
+                .userId(entity.getUserId())
                 .addressType(entity.getAddressType())
                 .recipientName(entity.getRecipientName())
                 .phoneNumber(entity.getPhoneNumber())
