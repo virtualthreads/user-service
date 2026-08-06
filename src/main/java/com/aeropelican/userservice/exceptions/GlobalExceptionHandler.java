@@ -59,4 +59,24 @@ import java.sql.Timestamp;
 
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
+        @ExceptionHandler(MappingAlreadyExistsException.class)
+        public ResponseEntity<ApiResponse<Void>> handleMappingAlreadyExists(
+                MappingAlreadyExistsException ex,
+                HttpServletRequest request) {
+
+            log.error("{}", ex.getMessage());
+
+            ApiError apiError = ApiError.builder()
+                    .error("MAPPING_ALREADY_EXISTS")
+                    .status(HttpStatus.CONFLICT.value())
+                    .path(request.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.<Void>builder()
+                            .success(false)
+                            .message(ex.getMessage())
+                            .error(apiError)
+                            .build());
+        }
     }
