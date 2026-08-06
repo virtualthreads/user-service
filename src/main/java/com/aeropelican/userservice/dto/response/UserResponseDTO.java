@@ -19,6 +19,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserResponseDTO {
 
+    // ==========================
+    // User Information
+    // ==========================
+
     private UUID userId;
 
     private String firstName;
@@ -29,15 +33,31 @@ public class UserResponseDTO {
 
     private String phoneNumber;
 
+    // ==========================
+    // Personal Information
+    // ==========================
+
     private Gender gender;
 
     private LocalDate dateOfBirth;
+
+    // ==========================
+    // Verification Details
+    // ==========================
 
     private Boolean emailVerified;
 
     private Boolean phoneVerified;
 
+    // ==========================
+    // User Status
+    // ==========================
+
     private UserStatus status;
+
+    // ==========================
+    // Audit Information
+    // ==========================
 
     private LocalDateTime createdAt;
 

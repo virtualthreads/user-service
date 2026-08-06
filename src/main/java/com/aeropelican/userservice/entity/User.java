@@ -88,7 +88,8 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(
-            name = "gender"
+            name = "gender",
+            length = 20
     )
     private Gender gender;
 
@@ -114,6 +115,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(
             name = "status",
+            length = 20,
             nullable = false
     )
     @Builder.Default
