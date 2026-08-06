@@ -14,5 +14,5 @@ import java.util.UUID;
         Optional<UserRole> findByUserIdAndRoleId(UUID userId, UUID roleId);
 
         void deleteByUserIdAndRoleId(UUID userId, UUID roleId);
-
+        boolean existsByRoleId(UUID roleId);
 }

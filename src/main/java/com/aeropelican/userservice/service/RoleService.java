@@ -8,6 +8,7 @@ import com.aeropelican.userservice.exceptions.RoleAssignedException;
 import com.aeropelican.userservice.mapper.RoleMapper;
 import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.repository.RoleRepository;
+import com.aeropelican.userservice.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
     public class RoleService {
 
         private final RoleRepository roleRepository;
-        private final UserRepository userRepository;
+        private final UserRoleRepository userRoleRepository;
 
         // Create Role
         public RoleResponseDTO createRole(RoleCreateRequestDTO request) {
@@ -107,12 +108,13 @@ import java.util.stream.Collectors;
                         log.error("Role not found with id: {}", roleId);
                         return new ResourceNotFoundException("Role not found");
                     });
+            if (userRoleRepository.existsByRoleId(roleId)) {
 
-            if (userRepository.existsByRoleId(roleId)) {
-                log.warn("Cannot delete role {} because it is assigned to users", roleId);
-                throw new RoleAssignedException("Role is assigned to users.");
+                log.warn("Cannot delete role {} because it is assigned to one or more users.", roleId);
+
+                throw new RoleAssignedException(
+                        "Role is assigned to users.");
             }
-
             roleRepository.delete(role);
 
             log.info("Role deleted successfully with id: {}", roleId);

@@ -17,7 +17,7 @@ import java.util.UUID;
     @Builder
     public class User {
         @Id
-        @Column(name = "user_id")
+        @Column(name = "user_id", updatable = false, nullable = false, columnDefinition = "VARCHAR(36)")
         private UUID userId;
         @Column(name = "first_name")
         private String firstName;

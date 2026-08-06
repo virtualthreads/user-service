@@ -16,7 +16,7 @@ import java.util.UUID;
 @Builder
 public class Role {
         @Id
-        @Column(name = "role_id", nullable = false, length = 36)
+        @Column(name = "role_id", updatable = false, nullable = false, columnDefinition = "VARCHAR(36)")
         private UUID roleId;
 
         @Column(name = "role_name", nullable = false, unique = true, length = 50)
