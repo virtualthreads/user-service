@@ -2,10 +2,14 @@ package com.aeropelican.userservice.service.impl;
 
 import com.aeropelican.userservice.dto.request.CreateUserRequestDTO;
 import com.aeropelican.userservice.dto.request.UpdateUserRequestDTO;
+import com.aeropelican.userservice.dto.request.UserSearchRequestDTO;
+import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.response.UserResponseDTO;
 import com.aeropelican.userservice.entity.User;
+import com.aeropelican.userservice.enums.SortDirection;
 import com.aeropelican.userservice.enums.UserStatus;
 import com.aeropelican.userservice.exception.EmailAlreadyExistsException;
+import com.aeropelican.userservice.exception.InvalidRequestException;
 import com.aeropelican.userservice.exception.PhoneNumberAlreadyExistsException;
 import com.aeropelican.userservice.exception.UserNotFoundException;
 import com.aeropelican.userservice.mapper.UserMapper;
@@ -13,10 +17,15 @@ import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -25,6 +34,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
     private final PasswordEncoder passwordEncoder;
 
 
@@ -33,13 +43,21 @@ public class UserServiceImpl implements UserService {
     // =========================================================
 
     @Override
-    public UserResponseDTO createUser(CreateUserRequestDTO request) {
+    public UserResponseDTO createUser(
+            CreateUserRequestDTO request) {
 
-        log.info("Creating user with email: {}", request.getEmail());
+        log.info(
+                "Creating user with email: {}",
+                request.getEmail()
+        );
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(
+                request.getEmail())) {
 
-            log.warn("Email already exists: {}", request.getEmail());
+            log.warn(
+                    "Email already exists: {}",
+                    request.getEmail()
+            );
 
             throw new EmailAlreadyExistsException(
                     "Email is already registered"
@@ -48,161 +66,504 @@ public class UserServiceImpl implements UserService {
 
         if (request.getPhoneNumber() != null
                 && !request.getPhoneNumber().isBlank()
-                && userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+                && userRepository.existsByPhoneNumber(
+                request.getPhoneNumber())) {
 
-            log.warn("Phone number already exists: {}", request.getPhoneNumber());
+            log.warn(
+                    "Phone number already exists: {}",
+                    request.getPhoneNumber()
+            );
 
             throw new PhoneNumberAlreadyExistsException(
                     "Phone number is already registered"
             );
         }
 
-        User user = UserMapper.toEntity(request);
+        User user =
+                UserMapper.toEntity(request);
 
         user.setPasswordHash(
-                passwordEncoder.encode(request.getPassword())
+                passwordEncoder.encode(
+                        request.getPassword()
+                )
         );
 
-        User savedUser = userRepository.save(user);
+        User savedUser =
+                userRepository.save(user);
 
-        log.info("User created successfully. User ID: {}", savedUser.getUserId());
+        log.info(
+                "User created successfully. User ID: {}",
+                savedUser.getUserId()
+        );
 
         return UserMapper.toResponse(savedUser);
     }
+
 
     // =========================================================
     // GET USER
     // =========================================================
 
     @Override
-    public UserResponseDTO getUser(UUID userId) {
+    public UserResponseDTO getUser(
+            UUID userId) {
 
-        log.info("Fetching user with ID: {}", userId);
+        log.info(
+                "Fetching user with ID: {}",
+                userId
+        );
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
+        User user =
+                userRepository.findById(userId)
+                        .orElseThrow(() -> {
 
-                    log.warn("User not found with ID: {}", userId);
+                            log.warn(
+                                    "User not found with ID: {}",
+                                    userId
+                            );
 
-                    return new UserNotFoundException(
-                            "User not found with ID: " + userId
-                    );
-                });
+                            return new UserNotFoundException(
+                                    "User not found with ID: "
+                                            + userId
+                            );
+                        });
 
-        log.info("User fetched successfully.");
+        // User must not be returned after soft deletion
+        if (user.getStatus() == UserStatus.DELETED) {
+
+            log.warn(
+                    "Attempted to fetch deleted user: {}",
+                    userId
+            );
+
+            throw new UserNotFoundException(
+                    "User not found with ID: "
+                            + userId
+            );
+        }
+
+        log.info(
+                "User fetched successfully."
+        );
 
         return UserMapper.toResponse(user);
     }
+
 
     // =========================================================
     // SEARCH USERS
     // =========================================================
 
     @Override
-    public List<UserResponseDTO> searchUsers(String keyword, String status) {
+    public PageResponse<UserResponseDTO> searchUsers(
+            UserSearchRequestDTO request) {
 
-        log.info("Searching users. keyword={}, status={}", keyword, status);
+        log.info(
+                "Searching users. keyword={}, status={}, gender={}, " +
+                        "emailVerified={}, phoneVerified={}",
+                request.getKeyword(),
+                request.getStatus(),
+                request.getGender(),
+                request.getEmailVerified(),
+                request.getPhoneVerified()
+        );
 
-        List<User> users;
+        // -----------------------------------------------------
+        // PAGE
+        // -----------------------------------------------------
 
-        if ((keyword == null || keyword.isBlank())
-                && (status == null || status.isBlank())) {
+        int page =
+                request.getPage() != null
+                        ? request.getPage()
+                        : 0;
 
-            users = userRepository.findAll();
+        if (page < 0) {
 
-        } else if (keyword != null && !keyword.isBlank()
-                && (status == null || status.isBlank())) {
-
-            users = userRepository
-                    .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
-                            keyword,
-                            keyword,
-                            keyword
-                    );
-
-        } else if ((keyword == null || keyword.isBlank())
-                && status != null && !status.isBlank()) {
-
-            users = userRepository.findByStatus(
-                    UserStatus.valueOf(status.toUpperCase())
+            log.warn(
+                    "Invalid page value: {}",
+                    page
             );
 
-        } else {
-
-            users = userRepository
-                    .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
-                            keyword,
-                            keyword,
-                            keyword
-                    )
-                    .stream()
-                    .filter(user -> user.getStatus().name().equalsIgnoreCase(status))
-                    .toList();
+            throw new InvalidRequestException(
+                    "Page cannot be negative"
+            );
         }
 
-        log.info("Total users found: {}", users.size());
+        // -----------------------------------------------------
+        // SIZE
+        // -----------------------------------------------------
 
-        return users.stream()
-                .map(UserMapper::toResponse)
-                .toList();
+        int size =
+                request.getSize() != null
+                        ? request.getSize()
+                        : 10;
+
+        if (size <= 0) {
+
+            log.warn(
+                    "Invalid page size: {}",
+                    size
+            );
+
+            throw new InvalidRequestException(
+                    "Page size must be greater than 0"
+            );
+        }
+
+        if (size > 100) {
+
+            log.warn(
+                    "Page size exceeds maximum allowed value: {}",
+                    size
+            );
+
+            throw new InvalidRequestException(
+                    "Page size cannot be greater than 100"
+            );
+        }
+
+        // -----------------------------------------------------
+        // SORT FIELD
+        // -----------------------------------------------------
+
+        String sortBy =
+                request.getSortBy() != null
+                        && !request.getSortBy().isBlank()
+                        ? request.getSortBy().trim()
+                        : "firstName";
+
+        Set<String> allowedSortFields = Set.of(
+                "firstName",
+                "lastName",
+                "email",
+                "phoneNumber",
+                "gender",
+                "dateOfBirth",
+                "emailVerified",
+                "phoneVerified",
+                "status",
+                "createdAt",
+                "updatedAt"
+        );
+
+        if (!allowedSortFields.contains(sortBy)) {
+
+            log.warn(
+                    "Invalid sort field: {}",
+                    sortBy
+            );
+
+            throw new InvalidRequestException(
+                    "Invalid sort field: " + sortBy
+            );
+        }
+
+        // -----------------------------------------------------
+        // SORT DIRECTION
+        // -----------------------------------------------------
+
+        SortDirection sortDirection =
+                request.getSortDirection() != null
+                        ? request.getSortDirection()
+                        : SortDirection.ASC;
+
+        Sort sort =
+                sortDirection == SortDirection.DESC
+                        ? Sort.by(sortBy).descending()
+                        : Sort.by(sortBy).ascending();
+
+        Pageable pageable =
+                PageRequest.of(
+                        page,
+                        size,
+                        sort
+                );
+
+        // -----------------------------------------------------
+        // BASE SPECIFICATION
+        // -----------------------------------------------------
+
+        Specification<User> specification =
+                (root, query, criteriaBuilder) ->
+                        criteriaBuilder.conjunction();
+
+        // -----------------------------------------------------
+        // KEYWORD FILTER
+        // -----------------------------------------------------
+
+        if (request.getKeyword() != null
+                && !request.getKeyword().isBlank()) {
+
+            String keyword =
+                    "%"
+                            + request.getKeyword()
+                            .trim()
+                            .toLowerCase()
+                            + "%";
+
+            specification =
+                    specification.and(
+                            (root, query, criteriaBuilder) ->
+                                    criteriaBuilder.or(
+
+                                            criteriaBuilder.like(
+                                                    criteriaBuilder.lower(
+                                                            root.get(
+                                                                    "firstName"
+                                                            )
+                                                    ),
+                                                    keyword
+                                            ),
+
+                                            criteriaBuilder.like(
+                                                    criteriaBuilder.lower(
+                                                            root.get(
+                                                                    "lastName"
+                                                            )
+                                                    ),
+                                                    keyword
+                                            ),
+
+                                            criteriaBuilder.like(
+                                                    criteriaBuilder.lower(
+                                                            root.get(
+                                                                    "email"
+                                                            )
+                                                    ),
+                                                    keyword
+                                            )
+                                    )
+                    );
+        }
+
+        // -----------------------------------------------------
+        // STATUS FILTER
+        // -----------------------------------------------------
+
+        if (request.getStatus() != null) {
+
+            specification =
+                    specification.and(
+                            (root, query, criteriaBuilder) ->
+                                    criteriaBuilder.equal(
+                                            root.get("status"),
+                                            request.getStatus()
+                                    )
+                    );
+        }
+
+        // -----------------------------------------------------
+        // GENDER FILTER
+        // -----------------------------------------------------
+
+        if (request.getGender() != null) {
+
+            specification =
+                    specification.and(
+                            (root, query, criteriaBuilder) ->
+                                    criteriaBuilder.equal(
+                                            root.get("gender"),
+                                            request.getGender()
+                                    )
+                    );
+        }
+
+        // -----------------------------------------------------
+        // EMAIL VERIFIED FILTER
+        // -----------------------------------------------------
+
+        if (request.getEmailVerified() != null) {
+
+            specification =
+                    specification.and(
+                            (root, query, criteriaBuilder) ->
+                                    criteriaBuilder.equal(
+                                            root.get("emailVerified"),
+                                            request.getEmailVerified()
+                                    )
+                    );
+        }
+
+        // -----------------------------------------------------
+        // PHONE VERIFIED FILTER
+        // -----------------------------------------------------
+
+        if (request.getPhoneVerified() != null) {
+
+            specification =
+                    specification.and(
+                            (root, query, criteriaBuilder) ->
+                                    criteriaBuilder.equal(
+                                            root.get("phoneVerified"),
+                                            request.getPhoneVerified()
+                                    )
+                    );
+        }
+
+        // -----------------------------------------------------
+        // DON'T RETURN DELETED USERS
+        // -----------------------------------------------------
+
+        specification =
+                specification.and(
+                        (root, query, criteriaBuilder) ->
+                                criteriaBuilder.notEqual(
+                                        root.get("status"),
+                                        UserStatus.DELETED
+                                )
+                );
+
+        // -----------------------------------------------------
+        // EXECUTE SEARCH
+        // -----------------------------------------------------
+
+        Page<User> userPage =
+                userRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        log.info(
+                "Total users found: {}",
+                userPage.getTotalElements()
+        );
+
+        // -----------------------------------------------------
+        // BUILD RESPONSE
+        // -----------------------------------------------------
+
+        return PageResponse
+                .<UserResponseDTO>builder()
+                .content(
+                        userPage
+                                .getContent()
+                                .stream()
+                                .map(UserMapper::toResponse)
+                                .toList()
+                )
+                .page(
+                        userPage.getNumber()
+                )
+                .size(
+                        userPage.getSize()
+                )
+                .totalElements(
+                        userPage.getTotalElements()
+                )
+                .totalPages(
+                        userPage.getTotalPages()
+                )
+                .first(
+                        userPage.isFirst()
+                )
+                .last(
+                        userPage.isLast()
+                )
+                .build();
     }
+
 
     // =========================================================
     // UPDATE USER
     // =========================================================
-
-    // =========================================================
-// UPDATE USER
-// =========================================================
 
     @Override
     public UserResponseDTO updateUser(
             UUID userId,
             UpdateUserRequestDTO request) {
 
-        log.info("Updating user with ID: {}", userId);
+        log.info(
+                "Updating user with ID: {}",
+                userId
+        );
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
+        User user =
+                userRepository.findById(userId)
+                        .orElseThrow(() -> {
 
-                    log.warn("User not found with ID: {}", userId);
+                            log.warn(
+                                    "User not found with ID: {}",
+                                    userId
+                            );
 
-                    return new UserNotFoundException(
-                            "User not found with ID: " + userId
-                    );
-                });
+                            return new UserNotFoundException(
+                                    "User not found with ID: "
+                                            + userId
+                            );
+                        });
+
+        // -----------------------------------------------------
+        // DELETED USER CANNOT BE UPDATED
+        // -----------------------------------------------------
+
+        if (user.getStatus() == UserStatus.DELETED) {
+
+            throw new UserNotFoundException(
+                    "User not found with ID: "
+                            + userId
+            );
+        }
+
+        // -----------------------------------------------------
+        // EMAIL DUPLICATE CHECK
+        // -----------------------------------------------------
 
         if (request.getEmail() != null
-                && !request.getEmail().equalsIgnoreCase(user.getEmail())
-                && userRepository.existsByEmail(request.getEmail())) {
+                && !request.getEmail()
+                .equalsIgnoreCase(user.getEmail())
+                && userRepository.existsByEmail(
+                request.getEmail())) {
 
-            log.warn("Email already exists: {}", request.getEmail());
+            log.warn(
+                    "Email already exists: {}",
+                    request.getEmail()
+            );
 
             throw new EmailAlreadyExistsException(
                     "Email is already registered"
             );
         }
 
-        if (request.getPhoneNumber() != null
-                && !request.getPhoneNumber().equals(user.getPhoneNumber())
-                && userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+        // -----------------------------------------------------
+        // PHONE DUPLICATE CHECK
+        // -----------------------------------------------------
 
-            log.warn("Phone number already exists: {}",
-                    request.getPhoneNumber());
+        if (request.getPhoneNumber() != null
+                && !request.getPhoneNumber()
+                .equals(user.getPhoneNumber())
+                && userRepository.existsByPhoneNumber(
+                request.getPhoneNumber())) {
+
+            log.warn(
+                    "Phone number already exists: {}",
+                    request.getPhoneNumber()
+            );
 
             throw new PhoneNumberAlreadyExistsException(
                     "Phone number is already registered"
             );
         }
 
-        UserMapper.updateEntity(user, request);
+        // -----------------------------------------------------
+        // UPDATE ENTITY
+        // -----------------------------------------------------
 
-        User updatedUser = userRepository.save(user);
+        UserMapper.updateEntity(
+                user,
+                request
+        );
 
-        log.info("User updated successfully. User ID: {}",
-                updatedUser.getUserId());
+        User updatedUser =
+                userRepository.save(user);
 
-        return UserMapper.toResponse(updatedUser);
+        log.info(
+                "User updated successfully. User ID: {}",
+                updatedUser.getUserId()
+        );
+
+        return UserMapper.toResponse(
+                updatedUser
+        );
     }
 
 
@@ -210,73 +571,125 @@ public class UserServiceImpl implements UserService {
     // UPDATE USER STATUS
     // =========================================================
 
-    // =========================================================
-// UPDATE USER STATUS
-// =========================================================
-
     @Override
     public UserResponseDTO updateUserStatus(
             UUID userId,
             String status) {
 
-        log.info("Updating status for user: {}", userId);
+        log.info(
+                "Updating status for user: {}",
+                userId
+        );
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
+        User user =
+                userRepository.findById(userId)
+                        .orElseThrow(() -> {
 
-                    log.warn("User not found with ID: {}", userId);
+                            log.warn(
+                                    "User not found with ID: {}",
+                                    userId
+                            );
 
-                    return new UserNotFoundException(
-                            "User not found with ID: " + userId
+                            return new UserNotFoundException(
+                                    "User not found with ID: "
+                                            + userId
+                            );
+                        });
+
+        UserStatus newStatus;
+
+        try {
+
+            newStatus =
+                    UserStatus.valueOf(
+                            status.toUpperCase()
                     );
-                });
 
-        user.setStatus(UserStatus.valueOf(status.toUpperCase()));
+        } catch (IllegalArgumentException ex) {
 
-        User updatedUser = userRepository.save(user);
+            log.warn(
+                    "Invalid user status: {}",
+                    status
+            );
 
-        log.info("User status updated successfully to {}",
-                updatedUser.getStatus());
+            throw new InvalidRequestException(
+                    "Invalid user status: " + status
+            );
+        }
 
-        return UserMapper.toResponse(updatedUser);
+        user.setStatus(newStatus);
+
+        User updatedUser =
+                userRepository.save(user);
+
+        log.info(
+                "User status updated successfully to {}",
+                updatedUser.getStatus()
+        );
+
+        return UserMapper.toResponse(
+                updatedUser
+        );
     }
 
-    // =========================================================
-    // DELETE USER
-    // =========================================================
 
     // =========================================================
-// DELETE USER (SOFT DELETE)
-// =========================================================
+    // DELETE USER - SOFT DELETE
+    // =========================================================
 
     @Override
-    public void deleteUser(UUID userId) {
+    public void deleteUser(
+            UUID userId) {
 
-        log.info("Deleting user with ID: {}", userId);
+        log.info(
+                "Deleting user with ID: {}",
+                userId
+        );
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
+        User user =
+                userRepository.findById(userId)
+                        .orElseThrow(() -> {
 
-                    log.warn("User not found with ID: {}", userId);
+                            log.warn(
+                                    "User not found with ID: {}",
+                                    userId
+                            );
 
-                    return new UserNotFoundException(
-                            "User not found with ID: " + userId
-                    );
-                });
+                            return new UserNotFoundException(
+                                    "User not found with ID: "
+                                            + userId
+                            );
+                        });
+
+        // -----------------------------------------------------
+        // ALREADY DELETED CHECK
+        // -----------------------------------------------------
 
         if (user.getStatus() == UserStatus.DELETED) {
 
-            log.warn("User already deleted. User ID: {}", userId);
+            log.warn(
+                    "User already deleted. User ID: {}",
+                    userId
+            );
 
-            throw new IllegalArgumentException(
+            throw new InvalidRequestException(
                     "User is already deleted."
             );
         }
 
-        user.setStatus(UserStatus.DELETED);
+        // -----------------------------------------------------
+        // SOFT DELETE
+        // -----------------------------------------------------
+
+        user.setStatus(
+                UserStatus.DELETED
+        );
 
         userRepository.save(user);
 
-        log.info("User soft deleted successfully. User ID: {}", userId);
+        log.info(
+                "User soft deleted successfully. User ID: {}",
+                userId
+        );
     }
 }

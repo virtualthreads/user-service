@@ -4,6 +4,9 @@ import com.aeropelican.userservice.dto.request.CreateRoleRequestDTO;
 import com.aeropelican.userservice.dto.request.UpdateRoleRequestDTO;
 import com.aeropelican.userservice.dto.response.RoleResponseDTO;
 import com.aeropelican.userservice.entity.Role;
+import com.aeropelican.userservice.exception.RoleAlreadyExistsException;
+import com.aeropelican.userservice.exception.RoleInUseException;
+import com.aeropelican.userservice.exception.RoleNotFoundException;
 import com.aeropelican.userservice.mapper.RoleMapper;
 import com.aeropelican.userservice.repository.RoleRepository;
 import com.aeropelican.userservice.repository.UserRoleRepository;
@@ -26,10 +29,17 @@ public class RoleServiceImpl implements RoleService {
     private final UserRoleRepository userRoleRepository;
     private final RoleMapper roleMapper;
 
+    // =========================================================
+    // CREATE ROLE
+    // =========================================================
+
     @Override
     public RoleResponseDTO createRole(CreateRoleRequestDTO request) {
 
-        log.info("Role creation requested: roleName={}", request.getRoleName());
+        log.info(
+                "Role creation requested: roleName={}",
+                request.getRoleName()
+        );
 
         if (roleRepository.existsByRoleName(request.getRoleName())) {
 
@@ -38,8 +48,9 @@ public class RoleServiceImpl implements RoleService {
                     request.getRoleName()
             );
 
-            throw new IllegalArgumentException(
-                    "Role with name '" + request.getRoleName() + "' already exists"
+            throw new RoleAlreadyExistsException(
+                    "Role with name '" + request.getRoleName()
+                            + "' already exists"
             );
         }
 
@@ -61,6 +72,10 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(savedRole);
     }
 
+    // =========================================================
+    // GET ALL ROLES
+    // =========================================================
+
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponseDTO> getAllRoles() {
@@ -79,6 +94,10 @@ public class RoleServiceImpl implements RoleService {
                 .toList();
     }
 
+    // =========================================================
+    // GET ROLE BY ID
+    // =========================================================
+
     @Override
     @Transactional(readOnly = true)
     public RoleResponseDTO getRoleById(UUID roleId) {
@@ -96,7 +115,7 @@ public class RoleServiceImpl implements RoleService {
                             roleId
                     );
 
-                    return new IllegalArgumentException(
+                    return new RoleNotFoundException(
                             "Role not found with ID: " + roleId
                     );
                 });
@@ -109,6 +128,10 @@ public class RoleServiceImpl implements RoleService {
 
         return roleMapper.toResponse(role);
     }
+
+    // =========================================================
+    // UPDATE ROLE
+    // =========================================================
 
     @Override
     public RoleResponseDTO updateRole(
@@ -130,21 +153,23 @@ public class RoleServiceImpl implements RoleService {
                             roleId
                     );
 
-                    return new IllegalArgumentException(
+                    return new RoleNotFoundException(
                             "Role not found with ID: " + roleId
                     );
                 });
 
         if (!role.getRoleName().equals(request.getRoleName())
-                && roleRepository.existsByRoleName(request.getRoleName())) {
+                && roleRepository.existsByRoleName(
+                request.getRoleName())) {
 
             log.warn(
                     "Role update failed: role name already exists, roleName={}",
                     request.getRoleName()
             );
 
-            throw new IllegalArgumentException(
-                    "Role with name '" + request.getRoleName() + "' already exists"
+            throw new RoleAlreadyExistsException(
+                    "Role with name '" + request.getRoleName()
+                            + "' already exists"
             );
         }
 
@@ -166,6 +191,10 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(updatedRole);
     }
 
+    // =========================================================
+    // DELETE ROLE
+    // =========================================================
+
     @Override
     public void deleteRole(UUID roleId) {
 
@@ -182,7 +211,7 @@ public class RoleServiceImpl implements RoleService {
                             roleId
                     );
 
-                    return new IllegalArgumentException(
+                    return new RoleNotFoundException(
                             "Role not found with ID: " + roleId
                     );
                 });
@@ -193,13 +222,15 @@ public class RoleServiceImpl implements RoleService {
         if (roleAssignedToUser) {
 
             log.warn(
-                    "Role deletion blocked: role is assigned to users, roleId={}, roleName={}",
+                    "Role deletion blocked: role is assigned to users, " +
+                            "roleId={}, roleName={}",
                     roleId,
                     role.getRoleName()
             );
 
-            throw new IllegalArgumentException(
-                    "Role cannot be deleted because it is assigned to one or more users"
+            throw new RoleInUseException(
+                    "Role cannot be deleted because it is assigned " +
+                            "to one or more users"
             );
         }
 

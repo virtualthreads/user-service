@@ -17,6 +17,10 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    // =========================================================
+    // USER NOT FOUND
+    // =========================================================
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(
             UserNotFoundException ex,
@@ -31,9 +35,14 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
+
+    // =========================================================
+    // EMAIL ALREADY EXISTS
+    // =========================================================
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEmailAlreadyExistsException(
@@ -49,9 +58,14 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(response);
     }
+
+    // =========================================================
+    // PHONE NUMBER ALREADY EXISTS
+    // =========================================================
 
     @ExceptionHandler(PhoneNumberAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handlePhoneNumberAlreadyExistsException(
@@ -67,9 +81,14 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(response);
     }
+
+    // =========================================================
+    // VALIDATION ERROR
+    // =========================================================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
@@ -96,9 +115,14 @@ public class GlobalExceptionHandler {
                 .fieldErrors(fieldErrors)
                 .build();
 
-        return ResponseEntity.badRequest()
+        return ResponseEntity
+                .badRequest()
                 .body(response);
     }
+
+    // =========================================================
+    // BINDING VALIDATION ERROR
+    // =========================================================
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ErrorResponse> handleBindException(
@@ -125,27 +149,14 @@ public class GlobalExceptionHandler {
                 .fieldErrors(fieldErrors)
                 .build();
 
-        return ResponseEntity.badRequest()
+        return ResponseEntity
+                .badRequest()
                 .body(response);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(
-            Exception ex,
-            HttpServletRequest request) {
-
-        log.error("Unexpected exception occurred", ex);
-
-        ErrorResponse response = ErrorResponse.builder()
-                .errorCode("INTERNAL_SERVER_ERROR")
-                .message("Something went wrong. Please contact administrator.")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(response);
-    }
+    // =========================================================
+    // ROLE NOT FOUND
+    // =========================================================
 
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleRoleNotFoundException(
@@ -157,18 +168,21 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
 
-        ErrorResponse response =
-                ErrorResponse.builder()
-                        .errorCode("ROLE_NOT_FOUND")
-                        .message(ex.getMessage())
-                        .status(HttpStatus.NOT_FOUND.value())
-                        .path(request.getRequestURI())
-                        .build();
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("ROLE_NOT_FOUND")
+                .message(ex.getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .path(request.getRequestURI())
+                .build();
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
+
+    // =========================================================
+    // ROLE ALREADY EXISTS
+    // =========================================================
 
     @ExceptionHandler(RoleAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleRoleAlreadyExistsException(
@@ -180,19 +194,21 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
 
-        ErrorResponse response =
-                ErrorResponse.builder()
-                        .errorCode("ROLE_ALREADY_EXISTS")
-                        .message(ex.getMessage())
-                        .status(HttpStatus.CONFLICT.value())
-                        .path(request.getRequestURI())
-                        .build();
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("ROLE_ALREADY_EXISTS")
+                .message(ex.getMessage())
+                .status(HttpStatus.CONFLICT.value())
+                .path(request.getRequestURI())
+                .build();
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(response);
     }
 
+    // =========================================================
+    // ROLE IN USE
+    // =========================================================
 
     @ExceptionHandler(RoleInUseException.class)
     public ResponseEntity<ErrorResponse> handleRoleInUseException(
@@ -204,17 +220,148 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
 
-        ErrorResponse response =
-                ErrorResponse.builder()
-                        .errorCode("ROLE_IN_USE")
-                        .message(ex.getMessage())
-                        .status(HttpStatus.CONFLICT.value())
-                        .path(request.getRequestURI())
-                        .build();
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("ROLE_IN_USE")
+                .message(ex.getMessage())
+                .status(HttpStatus.CONFLICT.value())
+                .path(request.getRequestURI())
+                .build();
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(response);
     }
 
+    // =========================================================
+    // USER ROLE ALREADY EXISTS
+    // =========================================================
+
+    @ExceptionHandler(UserRoleAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUserRoleAlreadyExistsException(
+            UserRoleAlreadyExistsException ex,
+            HttpServletRequest request) {
+
+        log.warn(
+                "User-role mapping already exists: {}",
+                ex.getMessage()
+        );
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("USER_ROLE_ALREADY_EXISTS")
+                .message(ex.getMessage())
+                .status(HttpStatus.CONFLICT.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    // =========================================================
+    // USER ROLE NOT FOUND
+    // =========================================================
+
+    @ExceptionHandler(UserRoleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserRoleNotFoundException(
+            UserRoleNotFoundException ex,
+            HttpServletRequest request) {
+
+        log.warn(
+                "User-role mapping not found: {}",
+                ex.getMessage()
+        );
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("USER_ROLE_NOT_FOUND")
+                .message(ex.getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
+    // =========================================================
+    // ADDRESS NOT FOUND
+    // =========================================================
+
+    @ExceptionHandler(AddressNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAddressNotFoundException(
+            AddressNotFoundException ex,
+            HttpServletRequest request) {
+
+        log.warn(
+                "Address not found: {}",
+                ex.getMessage()
+        );
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("ADDRESS_NOT_FOUND")
+                .message(ex.getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
+    // =========================================================
+    // INVALID REQUEST
+    // =========================================================
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRequestException(
+            InvalidRequestException ex,
+            HttpServletRequest request) {
+
+        log.warn(
+                "Invalid request: {}",
+                ex.getMessage()
+        );
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("INVALID_REQUEST")
+                .message(ex.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    // =========================================================
+    // UNEXPECTED EXCEPTION
+    // =========================================================
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(
+            Exception ex,
+            HttpServletRequest request) {
+
+        log.error(
+                "Unexpected exception occurred",
+                ex
+        );
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode("INTERNAL_SERVER_ERROR")
+                .message(
+                        "Something went wrong. " +
+                                "Please contact administrator."
+                )
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
 }

@@ -3,7 +3,9 @@ package com.aeropelican.userservice.controller;
 import com.aeropelican.userservice.dto.request.CreateUserRequestDTO;
 import com.aeropelican.userservice.dto.request.UpdateUserRequestDTO;
 import com.aeropelican.userservice.dto.request.UpdateUserStatusRequestDTO;
+import com.aeropelican.userservice.dto.request.UserSearchRequestDTO;
 import com.aeropelican.userservice.dto.response.APIResponse;
+import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.response.UserResponseDTO;
 import com.aeropelican.userservice.service.UserService;
 import jakarta.validation.Valid;
@@ -13,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -34,7 +35,8 @@ public class UserController {
 
         log.info("Received request to create user");
 
-        UserResponseDTO response = userService.createUser(request);
+        UserResponseDTO response =
+                userService.createUser(request);
 
         log.info("User created successfully");
 
@@ -56,9 +58,13 @@ public class UserController {
     public ResponseEntity<APIResponse<UserResponseDTO>> getUser(
             @PathVariable UUID userId) {
 
-        log.info("Received request to fetch user : {}", userId);
+        log.info(
+                "Received request to fetch user : {}",
+                userId
+        );
 
-        UserResponseDTO response = userService.getUser(userId);
+        UserResponseDTO response =
+                userService.getUser(userId);
 
         return ResponseEntity.ok(
                 APIResponse.success(
@@ -72,21 +78,21 @@ public class UserController {
     // SEARCH USERS
     // =========================================================
 
-    @GetMapping
-    public ResponseEntity<APIResponse<List<UserResponseDTO>>> searchUsers(
+    @PostMapping("/search")
+    public ResponseEntity<
+            APIResponse<PageResponse<UserResponseDTO>>
+            > searchUsers(
+            @RequestBody UserSearchRequestDTO request) {
 
-            @RequestParam(required = false)
-            String keyword,
+        log.info(
+                "Received search request. keyword={}, status={}, gender={}",
+                request.getKeyword(),
+                request.getStatus(),
+                request.getGender()
+        );
 
-            @RequestParam(required = false)
-            String status) {
-
-        log.info("Received search request. keyword={}, status={}",
-                keyword,
-                status);
-
-        List<UserResponseDTO> response =
-                userService.searchUsers(keyword, status);
+        PageResponse<UserResponseDTO> response =
+                userService.searchUsers(request);
 
         return ResponseEntity.ok(
                 APIResponse.success(
@@ -105,10 +111,16 @@ public class UserController {
             @PathVariable UUID userId,
             @Valid @RequestBody UpdateUserRequestDTO request) {
 
-        log.info("Received request to update user : {}", userId);
+        log.info(
+                "Received request to update user : {}",
+                userId
+        );
 
         UserResponseDTO response =
-                userService.updateUser(userId, request);
+                userService.updateUser(
+                        userId,
+                        request
+                );
 
         log.info("User updated successfully");
 
@@ -129,7 +141,10 @@ public class UserController {
             @PathVariable UUID userId,
             @Valid @RequestBody UpdateUserStatusRequestDTO request) {
 
-        log.info("Received request to update user status : {}", userId);
+        log.info(
+                "Received request to update user status : {}",
+                userId
+        );
 
         UserResponseDTO response =
                 userService.updateUserStatus(
@@ -148,14 +163,17 @@ public class UserController {
     }
 
     // =========================================================
-    // DELETE USER (SOFT DELETE)
+    // DELETE USER - SOFT DELETE
     // =========================================================
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<APIResponse<Void>> deleteUser(
             @PathVariable UUID userId) {
 
-        log.info("Received request to delete user : {}", userId);
+        log.info(
+                "Received request to delete user : {}",
+                userId
+        );
 
         userService.deleteUser(userId);
 
@@ -168,5 +186,4 @@ public class UserController {
                 )
         );
     }
-
 }
