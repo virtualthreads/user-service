@@ -11,8 +11,10 @@ import com.aeropelican.userservice.mapper.UserRoleMapper;
 import com.aeropelican.userservice.repository.RoleRepository;
 import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.repository.UserRoleRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,15 +31,18 @@ public class UserRoleService {
     private final RoleRepository roleRepository;
     private final UserRoleMapper userRoleMapper;
 
-    public UserRoleResponseDTO createUserRole(UserRoleCreateRequestDTO requestDTO) {
+    public UserRoleResponseDTO createUserRole(
+            UserRoleCreateRequestDTO requestDTO) {
 
         log.info("Creating user-role mapping");
 
         User user = userRepository.findById(requestDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
 
         Role role = roleRepository.findById(requestDTO.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Role not found"));
 
         UserRole userRole = UserRole.builder()
                 .userRoleId(UUID.randomUUID())
@@ -46,7 +51,8 @@ public class UserRoleService {
                 .assignedAt(LocalDateTime.now())
                 .build();
 
-        return userRoleMapper.toResponseDTO(userRoleRepository.save(userRole));
+        return userRoleMapper.toResponseDTO(
+                userRoleRepository.save(userRole));
     }
 
     public List<UserRoleResponseDTO> getAllUserRoles() {
@@ -65,30 +71,36 @@ public class UserRoleService {
 
         UserRole userRole = userRoleRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("UserRole not found with id: " + id));
+                        new ResourceNotFoundException(
+                                "UserRole not found with id: " + id));
 
         return userRoleMapper.toResponseDTO(userRole);
     }
 
-    public UserRoleResponseDTO updateUserRole(UUID id,
-                                              UserRoleUpdateRequestDTO requestDTO) {
+    public UserRoleResponseDTO updateUserRole(
+            UUID id,
+            UserRoleUpdateRequestDTO requestDTO) {
 
         log.info("Updating user-role mapping with id: {}", id);
 
         UserRole userRole = userRoleRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("UserRole not found with id: " + id));
+                        new ResourceNotFoundException(
+                                "UserRole not found with id: " + id));
 
         User user = userRepository.findById(requestDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
 
         Role role = roleRepository.findById(requestDTO.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Role not found"));
 
         userRole.setUser(user);
         userRole.setRole(role);
 
-        return userRoleMapper.toResponseDTO(userRoleRepository.save(userRole));
+        return userRoleMapper.toResponseDTO(
+                userRoleRepository.save(userRole));
     }
 
     public void deleteUserRole(UUID id) {
@@ -97,7 +109,8 @@ public class UserRoleService {
 
         UserRole userRole = userRoleRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("UserRole not found with id: " + id));
+                        new ResourceNotFoundException(
+                                "UserRole not found with id: " + id));
 
         userRoleRepository.delete(userRole);
     }
