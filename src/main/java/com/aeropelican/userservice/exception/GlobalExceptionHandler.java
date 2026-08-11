@@ -1,43 +1,71 @@
 package com.aeropelican.userservice.exception;
 
+import com.aeropelican.userservice.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotFound(
+    public ResponseEntity<ApiResponse> handleUserNotFoundException(
             UserNotFoundException ex) {
 
-        Map<String, Object> response = new HashMap<>();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(
+                        false,
+                        ex.getMessage(),
+                        null
+                ));
+    }
 
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.NOT_FOUND.value());
-        response.put("error", "User Not Found");
-        response.put("message", ex.getMessage());
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleRoleNotFoundException(
+            RoleNotFoundException ex) {
 
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(
+                        false,
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(AddressNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleAddressNotFoundException(
+            AddressNotFoundException ex) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(
+                        false,
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(UserRoleNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleUserRoleNotFoundException(
+            UserRoleNotFoundException ex) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(
+                        false,
+                        ex.getMessage(),
+                        null
+                ));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(
+    public ResponseEntity<ApiResponse> handleException(
             Exception ex) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        response.put("error", "Internal Server Error");
-        response.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse(
+                        false,
+                        ex.getMessage(),
+                        null
+                ));
     }
-
 }
