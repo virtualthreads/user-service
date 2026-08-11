@@ -11,6 +11,7 @@ import com.aeropelican.userservice.repository.RoleRepository;
 import com.aeropelican.userservice.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
             return RoleMapper.toResponseDTO(savedRole);
         }
         // Get All Roles
+        @Cacheable(value="Create Role",key = "#roleId")
         public List<RoleResponseDTO> getAllRoles() {
             log.info("Fetching all roles");
             List<RoleResponseDTO> roles = roleRepository.findAll()
@@ -54,6 +56,7 @@ import java.util.stream.Collectors;
             return roles;
         }
         // Get Role By Id
+        @Cacheable(value="Create Role",key = "#roleId")
         public RoleResponseDTO getRole(UUID roleId) {
 
             log.info("Fetching role with id: {}", roleId);

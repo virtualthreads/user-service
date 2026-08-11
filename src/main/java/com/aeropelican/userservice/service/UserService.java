@@ -11,6 +11,7 @@ import com.aeropelican.userservice.mapper.UserMapper;
 import com.aeropelican.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
         // Get User By Id
+    @Cacheable(value="Get User",key = "#userId")
         public UserResponseDTO getUser(UUID userId) {
             log.info("Request to fetch user by id:");
             User user = userRepository.findById(userId)
@@ -33,6 +35,7 @@ public class UserService {
         }
 
         // Get Users List
+    @Cacheable(value ="Get User List", key = "#requestDTO")
         public PageResponse<UserResponseDTO> usersList(PageRequestDTO requestDTO) {
             log.info("Fetching all users");
             Sort sort = requestDTO.getSortDir().equalsIgnoreCase("DESC")

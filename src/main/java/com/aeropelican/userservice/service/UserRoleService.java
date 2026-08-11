@@ -13,6 +13,7 @@ import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -61,6 +62,7 @@ public class UserRoleService {
         return UserRoleMapper.toResponseDTO(saved);
     }
      // Get Roles of User
+     @Cacheable(value="Get UserRoles",key = "#userId")
     public List<UserRoleResponseDTO> getUserRoles(UUID userId) {
 
         log.info("Fetching roles for user {}", userId);

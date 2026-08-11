@@ -13,6 +13,7 @@ import com.aeropelican.userservice.repository.AddressRepository;
 import com.aeropelican.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +66,7 @@ public class AddressService {
     }
      //To Get Address By Address ID
     @Transactional(readOnly = true)
+    @Cacheable(value="Get Address",key = "#addressId")
     public AddressResponseDTO getAddressById(UUID addressId) {
         log.info("Get Address API called for Address ID : {}", addressId);
         Address address = addressRepository.findById(addressId)
@@ -80,6 +82,7 @@ public class AddressService {
     }
      //To Get All Addresses of a User
     @Transactional(readOnly = true)
+    @Cacheable(value="Get list of Addresses",key = "#userId")
     public List<AddressResponseDTO> getUserAddresses(UUID userId) {
 
         log.info("Get User Addresses API called for User ID : {}", userId);
