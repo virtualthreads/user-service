@@ -4,9 +4,10 @@ import java.time.LocalDateTime;
 
 public record ApiResponse(
 
-        LocalDateTime timestamp,
-        Integer status,
-        String message
+        boolean success,
+        String message,
+        Object data
 
 ) {
+
 }
