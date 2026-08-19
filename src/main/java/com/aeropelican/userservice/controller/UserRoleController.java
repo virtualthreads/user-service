@@ -1,60 +1,81 @@
 package com.aeropelican.userservice.controller;
-
-import com.aeropelican.userservice.dto.ApiResponse;
-import com.aeropelican.userservice.dto.AssignRoleRequest;
-import com.aeropelican.userservice.dto.RoleResponse;
+import com.aeropelican.userservice.dto.request.AssignRoleRequestDTO;
+import com.aeropelican.userservice.dto.response.ApiResponse;
+import com.aeropelican.userservice.dto.response.UserRoleResponseDTO;
 import com.aeropelican.userservice.service.UserRoleService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/v1/users/{userId}/roles")
+@RequiredArgsConstructor
+@Slf4j
+@Validated
 public class UserRoleController {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserRoleController.class);
 
     private final UserRoleService userRoleService;
 
-    public UserRoleController(UserRoleService userRoleService) {
-        this.userRoleService = userRoleService;
-    }
-
+    //To Assign Role
     @PostMapping
-    public ResponseEntity<ApiResponse<RoleResponse>> assignRole(
+    public ResponseEntity<ApiResponse<UserRoleResponseDTO>> assignRole(
             @PathVariable UUID userId,
-            @Valid @RequestBody AssignRoleRequest request) {
-        logger.info("REST request to assign role ID {} to user ID {}", request.roleId(), userId);
-        RoleResponse assignedRole = userRoleService.assignRole(userId, request);
+            @Valid @RequestBody AssignRoleRequestDTO request) {
+
+        log.info("Received request to assign role {} to user {}",
+                request.getRoleId(), userId);
+
+        UserRoleResponseDTO response =
+                userRoleService.assignRole(userId, request);
+
+        log.info("Role assigned successfully.");
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(assignedRole, "Role assigned successfully"));
+                .body(ApiResponse.<UserRoleResponseDTO>builder()
+                        .success(true)
+                        .message("Role assigned successfully")
+                        .data(response)
+                        .build());
     }
-
+    //To Get User Roles
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RoleResponse>>> getUserRoles(@PathVariable UUID userId) {
-        logger.info("REST request to fetch roles for user ID {}", userId);
-        List<RoleResponse> roles = userRoleService.getUserRoles(userId);
-        return ResponseEntity.ok(ApiResponse.success(roles, "User roles retrieved successfully"));
-    }
+    public ResponseEntity<ApiResponse<List<UserRoleResponseDTO>>> getUserRoles(
+            @PathVariable UUID userId) {
 
+        log.info("Received request to fetch roles of user {}", userId);
+
+        List<UserRoleResponseDTO> response =
+                userRoleService.getUserRoles(userId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<UserRoleResponseDTO>>builder()
+                        .success(true)
+                        .message("User roles fetched successfully")
+                        .data(response)
+                        .build());
+    }
+    //To Delete Role
     @DeleteMapping("/{roleId}")
     public ResponseEntity<ApiResponse<Void>> removeRole(
             @PathVariable UUID userId,
             @PathVariable UUID roleId) {
-        logger.info("REST request to remove role ID {} from user ID {}", roleId, userId);
+
+        log.info("Received request to remove role {} from user {}",
+                roleId, userId);
+
         userRoleService.removeRole(userId, roleId);
-        return ResponseEntity.ok(ApiResponse.success(null, "Role removed successfully"));
+
+        log.info("Role removed successfully.");
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Role removed successfully")
+                        .build());
     }
 }

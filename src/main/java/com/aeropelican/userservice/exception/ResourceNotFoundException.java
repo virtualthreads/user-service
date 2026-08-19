@@ -1,4 +1,4 @@
-package com.aeropelican.userservice.exception;
+package com.aeropelican.userservice.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

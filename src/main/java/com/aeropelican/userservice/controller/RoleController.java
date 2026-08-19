@@ -1,74 +1,104 @@
 package com.aeropelican.userservice.controller;
-
-import com.aeropelican.userservice.dto.ApiResponse;
-import com.aeropelican.userservice.dto.CreateRoleRequest;
-import com.aeropelican.userservice.dto.RoleResponse;
-import com.aeropelican.userservice.dto.UpdateRoleRequest;
+import com.aeropelican.userservice.dto.request.RoleCreateRequestDTO;
+import com.aeropelican.userservice.dto.response.ApiResponse;
+import com.aeropelican.userservice.dto.response.RoleResponseDTO;
 import com.aeropelican.userservice.service.RoleService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/v1/roles")
+@RequiredArgsConstructor
+@Valid
+@Slf4j
 public class RoleController {
-
-    private static final Logger logger = LoggerFactory.getLogger(RoleController.class);
-
     private final RoleService roleService;
 
-    public RoleController(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
+    // Create Role
     @PostMapping
-    public ResponseEntity<ApiResponse<RoleResponse>> createRole(@Valid @RequestBody CreateRoleRequest request) {
-        logger.info("REST request to create role with name: {}", request.roleName());
-        RoleResponse createdRole = roleService.createRole(request);
+    public ResponseEntity<ApiResponse<RoleResponseDTO>> createRole(
+            @Valid @RequestBody RoleCreateRequestDTO request) {
+
+        log.info("Received request to create role");
+
+        RoleResponseDTO response = roleService.createRole(request);
+
+        log.info("Returning response for created role");
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(createdRole, "Role created successfully"));
+                .body(ApiResponse.<RoleResponseDTO>builder()
+                        .success(true)
+                        .message("Role created successfully")
+                        .data(response)
+                        .build());
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RoleResponse>>> getAllRoles() {
-        logger.info("REST request to fetch all roles");
-        List<RoleResponse> roles = roleService.getAllRoles();
-        return ResponseEntity.ok(ApiResponse.success(roles, "Roles retrieved successfully"));
+    public ResponseEntity<ApiResponse<List<RoleResponseDTO>>> getAllRoles() {
+
+        log.info("Received request to fetch all roles");
+
+        List<RoleResponseDTO> response = roleService.getAllRoles();
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<RoleResponseDTO>>builder()
+                        .success(true)
+                        .message("Roles fetched successfully")
+                        .data(response)
+                        .build());
     }
 
     @GetMapping("/{roleId}")
-    public ResponseEntity<ApiResponse<RoleResponse>> getRoleById(@PathVariable UUID roleId) {
-        logger.info("REST request to get role by ID: {}", roleId);
-        RoleResponse role = roleService.getRoleById(roleId);
-        return ResponseEntity.ok(ApiResponse.success(role, "Role retrieved successfully"));
+    public ResponseEntity<ApiResponse<RoleResponseDTO>> getRole(
+            @PathVariable UUID roleId) {
+
+        log.info("Received request to fetch role {}", roleId);
+
+        RoleResponseDTO response = roleService.getRole(roleId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<RoleResponseDTO>builder()
+                        .success(true)
+                        .message("Role fetched successfully")
+                        .data(response)
+                        .build());
     }
 
     @PutMapping("/{roleId}")
-    public ResponseEntity<ApiResponse<RoleResponse>> updateRole(
+    public ResponseEntity<ApiResponse<RoleResponseDTO>> updateRole(
             @PathVariable UUID roleId,
-            @Valid @RequestBody UpdateRoleRequest request) {
-        logger.info("REST request to update role ID: {}", roleId);
-        RoleResponse updatedRole = roleService.updateRole(roleId, request);
-        return ResponseEntity.ok(ApiResponse.success(updatedRole, "Role updated successfully"));
+            @Valid @RequestBody RoleCreateRequestDTO request) {
+
+        log.info("Received request to update role {}", roleId);
+
+        RoleResponseDTO response = roleService.updateRole(roleId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<RoleResponseDTO>builder()
+                        .success(true)
+                        .message("Role updated successfully")
+                        .data(response)
+                        .build());
     }
 
     @DeleteMapping("/{roleId}")
-    public ResponseEntity<ApiResponse<Void>> deleteRole(@PathVariable UUID roleId) {
-        logger.info("REST request to delete role ID: {}", roleId);
+    public ResponseEntity<ApiResponse<Void>> deleteRole(
+            @PathVariable UUID roleId) {
+
+        log.info("Received request to delete role {}", roleId);
+
         roleService.deleteRole(roleId);
-        return ResponseEntity.ok(ApiResponse.success(null, "Role deleted successfully"));
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Role deleted successfully")
+                        .build());
     }
 }
