@@ -1,85 +1,71 @@
 package com.aeropelican.userservice.mapper;
-
-import com.aeropelican.userservice.dto.AddressResponse;
-import com.aeropelican.userservice.dto.CreateAddressRequest;
-import com.aeropelican.userservice.dto.UpdateAddressRequest;
+import com.aeropelican.userservice.dto.request.AddressCreateRequestDTO;
+import com.aeropelican.userservice.dto.response.AddressResponseDTO;
 import com.aeropelican.userservice.entity.Address;
-import com.aeropelican.userservice.entity.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-
-@Component
+import java.util.UUID;
 public class AddressMapper {
 
-    private static final Logger logger = LoggerFactory.getLogger(AddressMapper.class);
-
-    public Address toEntity(CreateAddressRequest request, User user) {
-        logger.debug("Mapping CreateAddressRequest to Address entity for userId: {}", user != null ? user.getUserId() : null);
-        Address address = new Address();
-        address.setUser(user);
-        address.setAddressType(request.addressType());
-        address.setRecipientName(request.recipientName());
-        address.setPhoneNumber(request.phoneNumber());
-        address.setAddressLine1(request.addressLine1());
-        address.setAddressLine2(request.addressLine2());
-        address.setLandmark(request.landmark());
-        address.setCity(request.city());
-        address.setState(request.state());
-        address.setCountry(request.country());
-        address.setPostalCode(request.postalCode());
-        address.setLatitude(request.latitude());
-        address.setLongitude(request.longitude());
-        address.setIsDefault(Boolean.TRUE.equals(request.isDefault()));
-        return address;
+    private AddressMapper() {
     }
+    public static Address toEntity(AddressCreateRequestDTO requestDTO, UUID userId) {
 
-    public void updateEntityFromDto(UpdateAddressRequest request, Address address) {
-        logger.debug("Updating Address entity (addressId: {}) from UpdateAddressRequest", address.getAddressId());
-        address.setAddressType(request.addressType());
-        address.setRecipientName(request.recipientName());
-        address.setPhoneNumber(request.phoneNumber());
-        address.setAddressLine1(request.addressLine1());
-        address.setAddressLine2(request.addressLine2());
-        address.setLandmark(request.landmark());
-        address.setCity(request.city());
-        address.setState(request.state());
-        address.setCountry(request.country());
-        address.setPostalCode(request.postalCode());
-        address.setLatitude(request.latitude());
-        address.setLongitude(request.longitude());
-        if (request.isDefault() != null) {
-            address.setIsDefault(request.isDefault());
-        }
-        address.setUpdatedAt(LocalDateTime.now());
+        return Address.builder()
+                .addressId(UUID.randomUUID())
+                .userId(userId)
+                .addressType(requestDTO.getAddressType())
+                .recipientName(requestDTO.getRecipientName())
+                .phoneNumber(requestDTO.getPhoneNumber())
+                .addressLine1(requestDTO.getAddressLine1())
+                .addressLine2(requestDTO.getAddressLine2())
+                .landmark(requestDTO.getLandmark())
+                .city(requestDTO.getCity())
+                .state(requestDTO.getState())
+                .country(requestDTO.getCountry())
+                .postalCode(requestDTO.getPostalCode())
+                .latitude(requestDTO.getLatitude())
+                .longitude(requestDTO.getLongitude())
+                .isDefault(requestDTO.getIsDefault())
+                .build();
     }
+    public static void updateEntity(Address entity, AddressCreateRequestDTO requestDTO) {
 
-    public AddressResponse toResponse(Address address) {
-        if (address == null) {
-            logger.debug("Attempted to map null Address entity to AddressResponse");
-            return null;
+        entity.setAddressType(requestDTO.getAddressType());
+        entity.setRecipientName(requestDTO.getRecipientName());
+        entity.setPhoneNumber(requestDTO.getPhoneNumber());
+        entity.setAddressLine1(requestDTO.getAddressLine1());
+        entity.setAddressLine2(requestDTO.getAddressLine2());
+        entity.setLandmark(requestDTO.getLandmark());
+        entity.setCity(requestDTO.getCity());
+        entity.setState(requestDTO.getState());
+        entity.setCountry(requestDTO.getCountry());
+        entity.setPostalCode(requestDTO.getPostalCode());
+        entity.setLatitude(requestDTO.getLatitude());
+        entity.setLongitude(requestDTO.getLongitude());
+
+        if (requestDTO.getIsDefault() != null) {
+            entity.setIsDefault(requestDTO.getIsDefault());
         }
-        logger.debug("Mapping Address entity to AddressResponse for addressId: {}", address.getAddressId());
-        return new AddressResponse(
-                address.getAddressId(),
-                address.getUser() != null ? address.getUser().getUserId() : null,
-                address.getAddressType(),
-                address.getRecipientName(),
-                address.getPhoneNumber(),
-                address.getAddressLine1(),
-                address.getAddressLine2(),
-                address.getLandmark(),
-                address.getCity(),
-                address.getState(),
-                address.getCountry(),
-                address.getPostalCode(),
-                address.getLatitude(),
-                address.getLongitude(),
-                address.getIsDefault(),
-                address.getCreatedAt(),
-                address.getUpdatedAt()
-        );
+    }
+    public static AddressResponseDTO toResponseDTO(Address entity) {
+
+        return AddressResponseDTO.builder()
+                .addressId(entity.getAddressId())
+                .userId(entity.getUserId())
+                .addressType(entity.getAddressType())
+                .recipientName(entity.getRecipientName())
+                .phoneNumber(entity.getPhoneNumber())
+                .addressLine1(entity.getAddressLine1())
+                .addressLine2(entity.getAddressLine2())
+                .landmark(entity.getLandmark())
+                .city(entity.getCity())
+                .state(entity.getState())
+                .country(entity.getCountry())
+                .postalCode(entity.getPostalCode())
+                .latitude(entity.getLatitude())
+                .longitude(entity.getLongitude())
+                .isDefault(entity.getIsDefault())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
     }
 }

@@ -1,28 +1,25 @@
 package com.aeropelican.userservice.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.sql.Timestamp;
 import java.util.UUID;
-
 @Entity
 @Table(name = "roles")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Role {
-
     @Id
-    @Column(name = "role_id", length = 36, nullable = false, updatable = false)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "role_id", updatable = false, nullable = false, length = 36)
     private UUID roleId;
 
-    @Column(name = "role_name", length = 50, nullable = false, unique = true)
+    @Column(name = "role_name", nullable = false, unique = true, length = 50)
     private String roleName;
 
     @Column(name = "description", length = 255)
@@ -34,86 +31,21 @@ public class Role {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public Role() {
-    }
-
-    public Role(UUID roleId, String roleName, String description, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.roleId = roleId;
-        this.roleName = roleName;
-        this.description = description;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     @PrePersist
-    protected void onCreate() {
-        if (this.roleId == null) {
-            this.roleId = UUID.randomUUID();
+    public void prePersist() {
+        if (roleId == null) {
+            roleId = UUID.randomUUID();
         }
-        LocalDateTime now = LocalDateTime.now();
-        if (this.createdAt == null) {
-            this.createdAt = now;
-        }
-        if (this.updatedAt == null) {
-            this.updatedAt = now;
-        }
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    public void preUpdate() {
+
+        updatedAt = LocalDateTime.now();
     }
 
-    public UUID getRoleId() {
-        return roleId;
-    }
 
-    public void setRoleId(UUID roleId) {
-        this.roleId = roleId;
-    }
 
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return Objects.equals(roleId, role.roleId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(roleId);
-    }
 }

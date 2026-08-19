@@ -1,87 +1,99 @@
 package com.aeropelican.userservice.controller;
-
-import com.aeropelican.userservice.dto.ApiResponse;
-import com.aeropelican.userservice.dto.CreateUserRequest;
-import com.aeropelican.userservice.dto.PageResponse;
-import com.aeropelican.userservice.dto.UpdateUserRequest;
-import com.aeropelican.userservice.dto.UpdateUserStatusRequest;
-import com.aeropelican.userservice.dto.UserResponse;
-import com.aeropelican.userservice.dto.UserSearchRequest;
+import com.aeropelican.userservice.dto.request.PageRequestDTO;
+import com.aeropelican.userservice.dto.request.UserCreateRequestDTO;
+import com.aeropelican.userservice.dto.request.UserUpdateRequestDTO;
+import com.aeropelican.userservice.dto.response.ApiResponse;
+import com.aeropelican.userservice.dto.response.PageResponse;
+import com.aeropelican.userservice.dto.response.UserResponseDTO;
+import com.aeropelican.userservice.entity.User;
+import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.service.UserService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
+@Validated
+@Slf4j
 public class UserController {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
     private final UserService userService;
+    private UserRepository userRepository;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
-    @PostMapping
-    public ResponseEntity<ApiResponse<UserResponse>> registerUser(@Valid @RequestBody CreateUserRequest request) {
-        logger.info("REST request to register user with email: {}", request.email());
-        UserResponse createdUser = userService.createUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(createdUser, "User registered successfully"));
-    }
-
+    // Get User By Id
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable UUID userId) {
-        logger.info("REST request to get user by ID: {}", userId);
-        UserResponse user = userService.getUserById(userId);
-        return ResponseEntity.ok(ApiResponse.success(user, "User retrieved successfully"));
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getUser(
+            @PathVariable UUID userId) {
+        log.info("Received request to search user");
+        UserResponseDTO user = userService.getUser(userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.<UserResponseDTO>builder()
+                        .success(true)
+                        .message("User found successfully")
+                        .data(user)
+                        .build());
+    }
+    @GetMapping
+    public ResponseEntity<PageResponse<UserResponseDTO>> getAllUsers(
+            @Valid PageRequestDTO requestDTO) {
+        log.info("Received request to display all users");
+        PageResponse<UserResponseDTO> response = userService.usersList(requestDTO);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/search")
-    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> searchUsers(@RequestBody UserSearchRequest request) {
-        logger.info("REST request to search users with keyword: '{}', page: {}, size: {}",
-                request.keyword(), request.page(), request.size());
-        PageResponse<UserResponse> pageResponse = userService.searchUsers(request);
-        return ResponseEntity.ok(ApiResponse.success(pageResponse, "Users search executed successfully"));
+    // Create User
+    @PostMapping
+    public ResponseEntity<ApiResponse<UserResponseDTO>> registerUser(
+            @RequestBody UserCreateRequestDTO requestDTO) {
+        log.info("Received request to create user");
+        UserResponseDTO user = userService.registerUser(requestDTO);
+        log.info("Returning response for created user");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<UserResponseDTO>builder()
+                        .success(true)
+                        .message("User created successfully")
+                        .data(user)
+                        .build());
     }
 
+    //To Update User
     @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
             @PathVariable UUID userId,
-            @Valid @RequestBody UpdateUserRequest request) {
-        logger.info("REST request to update user profile for ID: {}", userId);
-        UserResponse updatedUser = userService.updateUser(userId, request);
-        return ResponseEntity.ok(ApiResponse.success(updatedUser, "User updated successfully"));
-    }
+            @RequestBody UserUpdateRequestDTO request) {
+        log.info("Received request to update user {}", userId);
 
-    @PatchMapping("/{userId}/status")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUserStatus(
-            @PathVariable UUID userId,
-            @Valid @RequestBody UpdateUserStatusRequest request) {
-        logger.info("REST request to update status for user ID: {} to {}", userId, request.status());
-        UserResponse updatedUser = userService.updateUserStatus(userId, request);
-        return ResponseEntity.ok(ApiResponse.success(updatedUser, "User status updated successfully"));
-    }
 
+        UserResponseDTO user = userService.updateUser(userId, request);
+
+        ApiResponse<UserResponseDTO> response = ApiResponse.<UserResponseDTO>builder()
+                .success(true)
+                .message("User updated successfully")
+                .data(user)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+    //To delete User
     @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID userId) {
-        logger.info("REST request to soft-delete user ID: {}", userId);
-        userService.deleteUser(userId);
-        return ResponseEntity.ok(ApiResponse.success(null, "User deleted successfully"));
+    public ResponseEntity<ApiResponse<UserResponseDTO>> deleteUser(
+            @PathVariable UUID userId) {
+        log.info("Received request to delete user {}", userId);
+
+        UserResponseDTO user = userService.deleteUser(userId);
+
+        ApiResponse<UserResponseDTO> response = ApiResponse.<UserResponseDTO>builder()
+                .success(true)
+                .message("User deleted successfully")
+                .data(user)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }
