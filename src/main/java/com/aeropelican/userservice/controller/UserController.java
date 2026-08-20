@@ -1,12 +1,12 @@
 package com.aeropelican.userservice.controller;
 
-import com.aeropelican.userservice.dto.ApiResponse;
-import com.aeropelican.userservice.dto.CreateUserRequest;
-import com.aeropelican.userservice.dto.PageResponse;
-import com.aeropelican.userservice.dto.UpdateUserRequest;
-import com.aeropelican.userservice.dto.UpdateUserStatusRequest;
-import com.aeropelican.userservice.dto.UserResponse;
-import com.aeropelican.userservice.dto.UserSearchRequest;
+import com.aeropelican.userservice.dto.response.ApiResponse;
+import com.aeropelican.userservice.dto.request.CreateUserRequest;
+import com.aeropelican.userservice.dto.response.PageResponse;
+import com.aeropelican.userservice.dto.request.UpdateUserRequest;
+import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
+import com.aeropelican.userservice.dto.response.UserResponse;
+import com.aeropelican.userservice.dto.request.UserSearchRequest;
 import com.aeropelican.userservice.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

@@ -1,8 +1,8 @@
 package com.aeropelican.userservice.service;
 
-import com.aeropelican.userservice.dto.CreateRoleRequest;
-import com.aeropelican.userservice.dto.RoleResponse;
-import com.aeropelican.userservice.dto.UpdateRoleRequest;
+import com.aeropelican.userservice.dto.request.CreateRoleRequest;
+import com.aeropelican.userservice.dto.response.RoleResponse;
+import com.aeropelican.userservice.dto.request.UpdateRoleRequest;
 
 import java.util.List;
 import java.util.UUID;

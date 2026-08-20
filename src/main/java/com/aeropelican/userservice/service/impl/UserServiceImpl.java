@@ -1,12 +1,12 @@
 package com.aeropelican.userservice.service.impl;
 
-import com.aeropelican.userservice.dto.CreateUserRequest;
-import com.aeropelican.userservice.dto.PageResponse;
+import com.aeropelican.userservice.dto.request.CreateUserRequest;
+import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.SortDirection;
-import com.aeropelican.userservice.dto.UpdateUserRequest;
-import com.aeropelican.userservice.dto.UpdateUserStatusRequest;
-import com.aeropelican.userservice.dto.UserResponse;
-import com.aeropelican.userservice.dto.UserSearchRequest;
+import com.aeropelican.userservice.dto.request.UpdateUserRequest;
+import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
+import com.aeropelican.userservice.dto.response.UserResponse;
+import com.aeropelican.userservice.dto.request.UserSearchRequest;
 import com.aeropelican.userservice.entity.Status;
 import com.aeropelican.userservice.entity.User;
 import com.aeropelican.userservice.exception.BusinessException;
@@ -19,6 +19,8 @@ import com.aeropelican.userservice.service.UserService;
 import jakarta.persistence.criteria.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -72,6 +74,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#userId")
     public UserResponse getUserById(UUID userId) {
         logger.debug("Fetching user details for userId: {}", userId);
 
@@ -95,7 +98,7 @@ public class UserServiceImpl implements UserService {
         String sortBy = Optional.ofNullable(request.sortBy())
                 .filter(s -> !s.trim().isEmpty())
                 .orElse("createdAt");
-        SortDirection sortDirection = Optional.ofNullable(request.sortDirection()).orElse(SortDirection.ASC);
+        SortDirection sortDirection = (SortDirection) Optional.ofNullable(request.sortDirection()).orElse(SortDirection.ASC);
 
         Sort sort = sortDirection == SortDirection.DESC
                 ? Sort.by(sortBy).descending()
@@ -114,6 +117,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#userId")
     public UserResponse updateUser(UUID userId, UpdateUserRequest request) {
         logger.info("Updating profile for user ID: {}", userId);
 
@@ -138,6 +142,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#userId")
     public UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request) {
         logger.info("Updating status for user ID: {} to {}", userId, request.status());
 
@@ -155,6 +160,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "users", key = "#userId")
     public void deleteUser(UUID userId) {
         logger.info("Request received to soft-delete user ID: {}", userId);
 

@@ -1,4 +1,4 @@
-package com.aeropelican.userservice.dto;
+package com.aeropelican.userservice.dto.response;
 
 import com.aeropelican.userservice.entity.Gender;
 import com.aeropelican.userservice.entity.Status;

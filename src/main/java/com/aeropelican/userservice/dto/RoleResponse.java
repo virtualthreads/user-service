@@ -1,4 +1,4 @@
-package com.aeropelican.userservice.dto;
+package com.aeropelican.userservice.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

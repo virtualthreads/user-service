@@ -1,8 +1,8 @@
 package com.aeropelican.userservice.service;
 
-import com.aeropelican.userservice.dto.AddressResponse;
-import com.aeropelican.userservice.dto.CreateAddressRequest;
-import com.aeropelican.userservice.dto.UpdateAddressRequest;
+import com.aeropelican.userservice.dto.response.AddressResponse;
+import com.aeropelican.userservice.dto.request.CreateAddressRequest;
+import com.aeropelican.userservice.dto.request.UpdateAddressRequest;
 
 import java.util.List;
 import java.util.UUID;

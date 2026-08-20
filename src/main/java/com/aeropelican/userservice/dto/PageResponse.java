@@ -1,4 +1,4 @@
-package com.aeropelican.userservice.dto;
+package com.aeropelican.userservice.dto.response;
 
 import org.springframework.data.domain.Page;
 

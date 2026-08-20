@@ -1,7 +1,7 @@
 package com.aeropelican.userservice.service.impl;
 
-import com.aeropelican.userservice.dto.AssignRoleRequest;
-import com.aeropelican.userservice.dto.RoleResponse;
+import com.aeropelican.userservice.dto.request.AssignRoleRequest;
+import com.aeropelican.userservice.dto.response.RoleResponse;
 import com.aeropelican.userservice.entity.Role;
 import com.aeropelican.userservice.entity.Status;
 import com.aeropelican.userservice.entity.User;

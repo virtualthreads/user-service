@@ -1,4 +1,4 @@
-package com.aeropelican.userservice.dto;
+package com.aeropelican.userservice.dto.request;
 
 import com.aeropelican.userservice.entity.AddressType;
 import jakarta.validation.constraints.NotBlank;

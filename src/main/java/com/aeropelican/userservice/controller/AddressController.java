@@ -1,9 +1,9 @@
 package com.aeropelican.userservice.controller;
 
-import com.aeropelican.userservice.dto.AddressResponse;
-import com.aeropelican.userservice.dto.ApiResponse;
-import com.aeropelican.userservice.dto.CreateAddressRequest;
-import com.aeropelican.userservice.dto.UpdateAddressRequest;
+import com.aeropelican.userservice.dto.response.AddressResponse;
+import com.aeropelican.userservice.dto.response.ApiResponse;
+import com.aeropelican.userservice.dto.request.CreateAddressRequest;
+import com.aeropelican.userservice.dto.request.UpdateAddressRequest;
 import com.aeropelican.userservice.service.AddressService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

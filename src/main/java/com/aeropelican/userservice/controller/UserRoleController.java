@@ -1,8 +1,8 @@
 package com.aeropelican.userservice.controller;
 
-import com.aeropelican.userservice.dto.ApiResponse;
-import com.aeropelican.userservice.dto.AssignRoleRequest;
-import com.aeropelican.userservice.dto.RoleResponse;
+import com.aeropelican.userservice.dto.response.ApiResponse;
+import com.aeropelican.userservice.dto.request.AssignRoleRequest;
+import com.aeropelican.userservice.dto.response.RoleResponse;
 import com.aeropelican.userservice.service.UserRoleService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

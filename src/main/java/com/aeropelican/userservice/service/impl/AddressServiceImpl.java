@@ -1,8 +1,8 @@
 package com.aeropelican.userservice.service.impl;
 
-import com.aeropelican.userservice.dto.AddressResponse;
-import com.aeropelican.userservice.dto.CreateAddressRequest;
-import com.aeropelican.userservice.dto.UpdateAddressRequest;
+import com.aeropelican.userservice.dto.response.AddressResponse;
+import com.aeropelican.userservice.dto.request.CreateAddressRequest;
+import com.aeropelican.userservice.dto.request.UpdateAddressRequest;
 import com.aeropelican.userservice.entity.Address;
 import com.aeropelican.userservice.entity.Status;
 import com.aeropelican.userservice.entity.User;
