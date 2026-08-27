@@ -1,0 +1,67 @@
+2026-08-21 00:09:10,123 INFO  [main] - Starting UserServiceApplication using Java 17.0.12 with PID 11628 (C:\Users\DELL\Documents\WORKSPACE\ecom-app\user-service\target\classes started by DELL in C:\Users\DELL\Documents\WORKSPACE\ecom-app\user-service)
+2026-08-21 00:09:10,126 INFO  [main] - No active profile set, falling back to 1 default profile: "default"
+2026-08-21 00:09:10,307 INFO  [background-preinit] - HV000001: Hibernate Validator 9.0.1.Final
+2026-08-21 00:09:10,889 INFO  [main] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-21 00:09:11,087 INFO  [main] - Finished Spring Data repository scanning in 188 ms. Found 4 JPA repository interfaces.
+2026-08-21 00:09:11,345 INFO  [main] - BeanFactory id=76e17bd2-0c15-3202-a19e-04994cccea94
+2026-08-21 00:09:11,863 INFO  [main] - Tomcat initialized with port 9020 (http)
+2026-08-21 00:09:11,879 INFO  [main] - Initializing ProtocolHandler ["http-nio-9020"]
+2026-08-21 00:09:11,882 INFO  [main] - Starting service [Tomcat]
+2026-08-21 00:09:11,883 INFO  [main] - Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-08-21 00:09:11,973 INFO  [main] - Root WebApplicationContext: initialization completed in 1804 ms
+2026-08-21 00:09:12,170 INFO  [main] - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-08-21 00:09:12,223 INFO  [main] - HHH000001: Hibernate ORM core version 7.2.19.Final
+2026-08-21 00:09:12,661 INFO  [main] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-21 00:09:12,698 INFO  [main] - HikariPool-1 - Starting...
+2026-08-21 00:09:12,890 INFO  [main] - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@783f5f71
+2026-08-21 00:09:12,892 INFO  [main] - HikariPool-1 - Start completed.
+2026-08-21 00:09:12,953 WARN  [main] - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-21 00:09:12,972 INFO  [main] - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/ecom_users?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.46
+	Default catalog/schema: ecom_users/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-21 00:09:13,895 INFO  [main] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-21 00:09:13,903 INFO  [main] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-21 00:09:13,996 INFO  [main] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-21 00:09:14,682 WARN  [main] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-21 00:09:15,185 INFO  [main] - Eureka HTTP Client uses RestClient.
+2026-08-21 00:09:15,217 WARN  [main] - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-08-21 00:09:15,240 INFO  [main] - Setting initial instance status as: STARTING
+2026-08-21 00:09:15,264 INFO  [main] - Initializing Eureka in region us-east-1
+2026-08-21 00:09:15,268 INFO  [main] - Resolving eureka endpoints via configuration
+2026-08-21 00:09:15,275 INFO  [main] - Disable delta property : false
+2026-08-21 00:09:15,275 INFO  [main] - Single vip registry refresh property : null
+2026-08-21 00:09:15,275 INFO  [main] - Force full registry fetch : false
+2026-08-21 00:09:15,275 INFO  [main] - Application is null : false
+2026-08-21 00:09:15,276 INFO  [main] - Registered Applications size is zero : true
+2026-08-21 00:09:15,276 INFO  [main] - Application version is -1: true
+2026-08-21 00:09:15,276 INFO  [main] - Getting all instance registry info from the eureka server
+2026-08-21 00:09:15,787 INFO  [main] - The response status is 200
+2026-08-21 00:09:15,790 INFO  [main] - Starting heartbeat executor: renew interval is: 30
+2026-08-21 00:09:15,792 INFO  [main] - InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-08-21 00:09:15,794 INFO  [main] - Discovery Client initialized at timestamp 1787251155793 with initial instances count: 0
+2026-08-21 00:09:15,798 INFO  [main] - Registering application USER-SERVICE with eureka with status UP
+2026-08-21 00:09:15,798 INFO  [main] - Saw local status change event StatusChangeEvent [timestamp=1787251155798, current=UP, previous=STARTING]
+2026-08-21 00:09:15,800 INFO  [main] - Starting ProtocolHandler ["http-nio-9020"]
+2026-08-21 00:09:15,800 INFO  [DiscoveryClient-InstanceInfoReplicator-%d] - DiscoveryClient_USER-SERVICE/DESKTOP-JNJVUBM:user-service:9020: registering service...
+2026-08-21 00:09:15,833 INFO  [main] - Tomcat started on port 9020 (http) with context path '/'
+2026-08-21 00:09:15,834 INFO  [main] - Updating port to 9020
+2026-08-21 00:09:15,891 INFO  [main] - Started UserServiceApplication in 6.338 seconds (process running for 6.936)
+2026-08-21 00:09:15,944 INFO  [DiscoveryClient-InstanceInfoReplicator-%d] - DiscoveryClient_USER-SERVICE/DESKTOP-JNJVUBM:user-service:9020 - registration status: 204
+2026-08-21 00:09:45,795 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - Disable delta property : false
+2026-08-21 00:09:45,795 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - Single vip registry refresh property : null
+2026-08-21 00:09:45,795 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - Force full registry fetch : false
+2026-08-21 00:09:45,795 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - Application is null : false
+2026-08-21 00:09:45,795 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - Registered Applications size is zero : true
+2026-08-21 00:09:45,795 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - Application version is -1: false
+2026-08-21 00:09:45,795 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - Getting all instance registry info from the eureka server
+2026-08-21 00:09:45,827 INFO  [DiscoveryClient-CacheRefreshExecutor-%d] - The response status is 200
+2026-08-21 00:14:15,284 INFO  [AsyncResolver-bootstrap-executor-%d] - Resolving eureka endpoints via configuration

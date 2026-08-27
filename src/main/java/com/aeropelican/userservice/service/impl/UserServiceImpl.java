@@ -5,6 +5,7 @@ import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.SortDirection;
 import com.aeropelican.userservice.dto.request.UpdateUserRequest;
 import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
+import com.aeropelican.userservice.dto.response.UserAuthResponse;
 import com.aeropelican.userservice.dto.response.UserResponse;
 import com.aeropelican.userservice.dto.request.UserSearchRequest;
 import com.aeropelican.userservice.entity.Status;
@@ -157,6 +158,25 @@ public class UserServiceImpl implements UserService {
 
         logger.info("Successfully updated status for user ID: {} to {}", userId, request.status());
         return userMapper.toResponse(updatedUser);
+    }
+
+    @Override
+    public UserAuthResponse findByEmail(String email) {
+        return userRepository
+                .findByEmail(email)
+                .map(user -> {
+                    return new UserAuthResponse(
+                            user.getUserId(),
+                            user.getFirstName(),
+                            user.getLastName(),
+                            user.getEmail(),
+                            user.getPhoneNumber(),
+                            user.getGender(),
+                            user.getStatus(),
+                            user.getPasswordHash()
+                    );
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override

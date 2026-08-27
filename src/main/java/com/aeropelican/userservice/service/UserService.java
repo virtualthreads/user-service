@@ -4,6 +4,7 @@ import com.aeropelican.userservice.dto.request.CreateUserRequest;
 import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.request.UpdateUserRequest;
 import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
+import com.aeropelican.userservice.dto.response.UserAuthResponse;
 import com.aeropelican.userservice.dto.response.UserResponse;
 import com.aeropelican.userservice.dto.request.UserSearchRequest;
 
@@ -20,6 +21,8 @@ public interface UserService {
     UserResponse updateUser(UUID userId, UpdateUserRequest request);
 
     UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request);
+
+    UserAuthResponse findByEmail(String email);
 
     void deleteUser(UUID userId);
 }
