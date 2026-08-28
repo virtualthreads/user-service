@@ -1,6 +1,7 @@
 package com.aeropelican.userservice.service.impl;
 
 import com.aeropelican.userservice.dto.request.CreateUserRequest;
+import com.aeropelican.userservice.dto.response.AuthUser;
 import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.SortDirection;
 import com.aeropelican.userservice.dto.request.UpdateUserRequest;
@@ -161,22 +162,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAuthResponse findByEmail(String email) {
-        return userRepository
+    public AuthUser findByEmail(String email) {
+        AuthUser user = userRepository
                 .findByEmail(email)
-                .map(user -> {
-                    return new UserAuthResponse(
-                            user.getUserId(),
-                            user.getFirstName(),
-                            user.getLastName(),
-                            user.getEmail(),
-                            user.getPhoneNumber(),
-                            user.getGender(),
-                            user.getStatus(),
-                            user.getPasswordHash()
+                .map(u -> {
+                    return new AuthUser(
+                            u.getFirstName(),
+                            u.getLastName(),
+                            u.getEmail(),
+                            u.getPasswordHash()
                     );
                 })
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+        return user;
     }
 
     @Override

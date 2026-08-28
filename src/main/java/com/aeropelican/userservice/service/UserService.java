@@ -1,6 +1,7 @@
 package com.aeropelican.userservice.service;
 
 import com.aeropelican.userservice.dto.request.CreateUserRequest;
+import com.aeropelican.userservice.dto.response.AuthUser;
 import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.request.UpdateUserRequest;
 import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
@@ -22,7 +23,7 @@ public interface UserService {
 
     UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request);
 
-    UserAuthResponse findByEmail(String email);
-
     void deleteUser(UUID userId);
+
+    AuthUser findByEmail(String email);
 }

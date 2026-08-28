@@ -18,14 +18,5 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
     private final UserService userService;
 
-    @GetMapping("/user/email")
-    public ResponseEntity<ApiResponse<UserAuthResponse>> findByEmail(@RequestParam String email) {
-        return ResponseEntity.ok(ApiResponse.success(userService.findByEmail(email), "User fetched"));
-    }
 
-    @GetMapping("/ad")
-    public String adminRole() {
-        log.info("Admin endpoint triggered successfully");
-        return "Success";
-    }
 }
