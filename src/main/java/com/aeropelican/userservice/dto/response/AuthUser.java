@@ -1,14 +1,16 @@
 package com.aeropelican.userservice.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Builder
 public record AuthUser(
+        UUID userId,
         String firstname,
         String lastname,
         String email,
-        String hashedPassword
+        String hashedPassword,
+        String role
 ) {
 }
