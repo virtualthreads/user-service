@@ -18,6 +18,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Address entity for managing user delivery and contact addresses.
+ * Supports address types, default address selection, location details,
+ * and automatic creation and update timestamps.
+ */
 @Entity
 @Table(name = "addresses")
 @Getter
@@ -90,13 +95,17 @@ public class Address {
         if (this.addressId == null) {
             this.addressId = UUID.randomUUID();
         }
+
         if (this.isDefault == null) {
             this.isDefault = false;
         }
+
         LocalDateTime now = LocalDateTime.now();
+
         if (this.createdAt == null) {
             this.createdAt = now;
         }
+
         if (this.updatedAt == null) {
             this.updatedAt = now;
         }
