@@ -1,18 +1,15 @@
 package com.aeropelican.userservice.service;
 
 import com.aeropelican.userservice.dto.request.CreateUserRequest;
-import com.aeropelican.userservice.dto.response.AuthUser;
-import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.request.UpdateUserRequest;
 import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
-import com.aeropelican.userservice.dto.response.UserAuthResponse;
-import com.aeropelican.userservice.dto.response.UserResponse;
 import com.aeropelican.userservice.dto.request.UserSearchRequest;
+import com.aeropelican.userservice.dto.response.PageResponse;
+import com.aeropelican.userservice.dto.response.UserResponse;
 
 import java.util.UUID;
 
 public interface UserService {
-
     UserResponse createUser(CreateUserRequest request);
 
     UserResponse getUserById(UUID userId);
@@ -24,6 +21,4 @@ public interface UserService {
     UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request);
 
     void deleteUser(UUID userId);
-
-    AuthUser findByEmail(String email);
 }

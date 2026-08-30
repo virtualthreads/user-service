@@ -1,192 +1,102 @@
 package com.aeropelican.userservice.exception;
 
-import com.aeropelican.userservice.dto.response.ApiResponse;
 import com.aeropelican.userservice.dto.response.ErrorResponse;
-import com.aeropelican.userservice.dto.response.FieldError;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
-        logger.warn("Resource not found: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("RESOURCE_NOT_FOUND")
-                .status(HttpStatus.NOT_FOUND.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.failure(ex.getMessage(), error));
+    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+        log.error("Resource not found: {}", ex.getMessage());
+        return buildError(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex, HttpServletRequest request) {
-        logger.warn("Resource already exists conflict: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("RESOURCE_CONFLICT")
-                .status(HttpStatus.CONFLICT.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.failure(ex.getMessage(), error));
-    }
-
-    @ExceptionHandler(ResourceInUseException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResourceInUseException(ResourceInUseException ex, HttpServletRequest request) {
-        logger.warn("Resource in use conflict: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("RESOURCE_IN_USE")
-                .status(HttpStatus.CONFLICT.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.failure(ex.getMessage(), error));
+    public ResponseEntity<Map<String, Object>> handleAlreadyExists(ResourceAlreadyExistsException ex, HttpServletRequest request) {
+        log.error("Resource already exists: {}", ex.getMessage());
+        return buildError(HttpStatus.CONFLICT, "RESOURCE_CONFLICT", ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(ValidationException ex, HttpServletRequest request) {
-        logger.warn("Validation error: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("VALIDATION_FAILED")
-                .status(HttpStatus.BAD_REQUEST.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.failure(ex.getMessage(), error));
+    public ResponseEntity<Map<String, Object>> handleValidation(ValidationException ex, HttpServletRequest request) {
+        log.error("Validation exception: {}", ex.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity<ApiResponse<Void>> handleInvalidRequestException(InvalidRequestException ex, HttpServletRequest request) {
-        logger.warn("Invalid request: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("INVALID_REQUEST")
-                .status(HttpStatus.BAD_REQUEST.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.failure(ex.getMessage(), error));
+    public ResponseEntity<Map<String, Object>> handleInvalidRequest(InvalidRequestException ex, HttpServletRequest request) {
+        log.error("Invalid request: {}", ex.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex, HttpServletRequest request) {
-        logger.warn("Business logic violation: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("BUSINESS_EXCEPTION")
-                .status(HttpStatus.BAD_REQUEST.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.failure(ex.getMessage(), error));
-    }
-
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnauthorizedException(UnauthorizedException ex, HttpServletRequest request) {
-        logger.warn("Unauthorized access: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("UNAUTHORIZED")
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.failure(ex.getMessage(), error));
-    }
-
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ApiResponse<Void>> handleForbiddenException(ForbiddenException ex, HttpServletRequest request) {
-        logger.warn("Forbidden access: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("FORBIDDEN")
-                .status(HttpStatus.FORBIDDEN.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.failure(ex.getMessage(), error));
+    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex, HttpServletRequest request) {
+        log.error("Business exception: {}", ex.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, "BUSINESS_EXCEPTION", ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors()
-                .stream()
-                .map(e -> FieldError.builder()
-                        .field(e.getField())
-                        .rejectedValue(e.getRejectedValue())
-                        .message(e.getDefaultMessage())
-                        .build())
-                .collect(Collectors.toList());
-
-        logger.warn("Payload validation failed for fields: {}", fieldErrors.stream().map(FieldError::getField).toList());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("VALIDATION_FAILED")
-                .status(HttpStatus.BAD_REQUEST.value())
-                .path(request.getRequestURI())
-                .fieldErrors(fieldErrors)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.failure("Validation failed for input fields", error));
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        log.error("Method argument validation failed: {}", ex.getMessage());
+        List<ErrorResponse.FieldError> errors = new ArrayList<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            errors.add(ErrorResponse.FieldError.builder()
+                    .field(fieldError.getField())
+                    .message(fieldError.getDefaultMessage())
+                    .build());
+        }
+        return buildError(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Validation failed", request.getRequestURI(), errors);
     }
 
-    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class, IllegalArgumentException.class})
-    public ResponseEntity<ApiResponse<Void>> handleBadRequestException(Exception ex, HttpServletRequest request) {
-        logger.warn("Malformed request or type mismatch: {}", ex.getMessage());
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("BAD_REQUEST")
-                .status(HttpStatus.BAD_REQUEST.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.failure("Malformed request payload or invalid parameter type", error));
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        log.error("Type mismatch: {}", ex.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "Invalid UUID format or parameter type", request.getRequestURI(), null);
     }
 
-    @ExceptionHandler(DatabaseException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDatabaseException(DatabaseException ex, HttpServletRequest request) {
-        logger.error("Database operation error: {}", ex.getMessage(), ex);
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("DATABASE_ERROR")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.failure("A database error occurred. Please try again later.", error));
-    }
-
-    @ExceptionHandler(InternalServerException.class)
-    public ResponseEntity<ApiResponse<Void>> handleInternalServerException(InternalServerException ex, HttpServletRequest request) {
-        logger.error("Internal server error: {}", ex.getMessage(), ex);
-        ErrorResponse error = ErrorResponse.builder()
-                .errorCode("INTERNAL_SERVER_ERROR")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.failure("An internal server error occurred.", error));
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
+        log.error("Constraint violation: {}", ex.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex, HttpServletRequest request) {
-        logger.error("Unhandled exception caught in GlobalExceptionHandler: {}", ex.getMessage(), ex);
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex, HttpServletRequest request) {
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "Unexpected server error", request.getRequestURI(), null);
+    }
+
+    private ResponseEntity<Map<String, Object>> buildError(HttpStatus status, String errorCode, String message, String path,
+                                                         List<ErrorResponse.FieldError> fieldErrors) {
         ErrorResponse error = ErrorResponse.builder()
-                .errorCode("INTERNAL_SERVER_ERROR")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .path(request.getRequestURI())
+                .success(false)
+                .timestamp(LocalDateTime.now())
+                .errorCode(errorCode)
+                .message(message)
+                .path(path)
+                .fieldErrors(fieldErrors)
                 .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.failure("An unexpected error occurred. Please contact system administrator.", error));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("error", error);
+        return ResponseEntity.status(status).body(response);
     }
 }

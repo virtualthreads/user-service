@@ -15,4 +15,10 @@ public record UserSearchRequest(
         String sortBy,
         SortDirection sortDirection
 ) {
+    public UserSearchRequest {
+        if (page == null) page = 0;
+        if (size == null) size = 10;
+        if (sortBy == null || sortBy.isBlank()) sortBy = "firstName";
+        if (sortDirection == null) sortDirection = SortDirection.ASC;
+    }
 }

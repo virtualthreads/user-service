@@ -20,5 +20,4 @@ public record UserResponse(
         Status status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-) {
-}
+) {}

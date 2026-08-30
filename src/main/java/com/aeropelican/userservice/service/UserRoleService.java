@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserRoleService {
-
     RoleResponse assignRole(UUID userId, AssignRoleRequest request);
 
     List<RoleResponse> getUserRoles(UUID userId);

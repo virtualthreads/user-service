@@ -1,28 +1,23 @@
 package com.aeropelican.userservice.service.impl;
 
 import com.aeropelican.userservice.dto.request.CreateUserRequest;
-import com.aeropelican.userservice.dto.response.AuthUser;
-import com.aeropelican.userservice.dto.response.PageResponse;
-import com.aeropelican.userservice.dto.SortDirection;
 import com.aeropelican.userservice.dto.request.UpdateUserRequest;
 import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
-import com.aeropelican.userservice.dto.response.UserAuthResponse;
-import com.aeropelican.userservice.dto.response.UserResponse;
 import com.aeropelican.userservice.dto.request.UserSearchRequest;
+import com.aeropelican.userservice.dto.response.PageResponse;
+import com.aeropelican.userservice.dto.response.UserResponse;
 import com.aeropelican.userservice.entity.Status;
 import com.aeropelican.userservice.entity.User;
 import com.aeropelican.userservice.exception.BusinessException;
+import com.aeropelican.userservice.exception.InvalidRequestException;
 import com.aeropelican.userservice.exception.ResourceAlreadyExistsException;
 import com.aeropelican.userservice.exception.ResourceNotFoundException;
 import com.aeropelican.userservice.exception.ValidationException;
 import com.aeropelican.userservice.mapper.UserMapper;
 import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.service.UserService;
-import jakarta.persistence.criteria.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,214 +30,204 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;
-    }
-
     @Override
+    @Transactional
     public UserResponse createUser(CreateUserRequest request) {
-        logger.info("Initiating user creation for email: {}", request.email());
-
+        log.info("Creating user for email: {}", request.email());
         validateCreateRequest(request);
 
         if (userRepository.existsByEmail(request.email())) {
-            logger.warn("User registration failed: Email {} is already registered", request.email());
+            log.warn("User creation failed: email already exists {}", request.email());
             throw new ResourceAlreadyExistsException("User already exists with email: " + request.email());
         }
 
         String encodedPassword = passwordEncoder.encode(request.password());
-        User userEntity = userMapper.toEntity(request, encodedPassword);
-
-        User savedUser = userRepository.save(userEntity);
-        logger.info("Successfully created user with ID: {}", savedUser.getUserId());
-
+        User user = userMapper.toEntity(request, encodedPassword);
+        User savedUser = userRepository.save(user);
+        log.info("User created successfully with id: {}", savedUser.getUserId());
         return userMapper.toResponse(savedUser);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "users", key = "#userId")
     public UserResponse getUserById(UUID userId) {
-        logger.debug("Fetching user details for userId: {}", userId);
-
-        User user = userRepository.findByUserIdAndStatusNot(userId, Status.DELETED)
-                .orElseThrow(() -> {
-                    logger.warn("User search failed: User not found or deleted with ID: {}", userId);
-                    return new ResourceNotFoundException("User not found with id: " + userId);
-                });
-
+        log.info("Fetching user by id: {}", userId);
+        validateUserId(userId);
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         return userMapper.toResponse(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> searchUsers(UserSearchRequest request) {
-        logger.debug("Executing user search with keyword: '{}', status: '{}', gender: '{}'",
-                request.keyword(), request.status(), request.gender());
+        log.info("Searching users with request: {}", request);
+        int page = request.page() == null ? 0 : request.page();
+        int size = request.size() == null ? 10 : request.size();
+        String sortBy = request.sortBy() == null || request.sortBy().isBlank() ? "firstName" : request.sortBy();
+        Sort.Direction direction = request.sortDirection() == null || request.sortDirection() == com.aeropelican.userservice.dto.SortDirection.ASC
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-        int page = Optional.ofNullable(request.page()).filter(p -> p >= 0).orElse(0);
-        int size = Optional.ofNullable(request.size()).filter(s -> s > 0).orElse(10);
-        String sortBy = Optional.ofNullable(request.sortBy())
-                .filter(s -> !s.trim().isEmpty())
-                .orElse("createdAt");
-        SortDirection sortDirection = (SortDirection) Optional.ofNullable(request.sortDirection()).orElse(SortDirection.ASC);
+        Specification<User> specification = buildUserSpecification(request);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<User> userPage = userRepository.findAll(specification, pageable);
 
-        Sort sort = sortDirection == SortDirection.DESC
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
+        List<UserResponse> content = userPage.getContent().stream()
+                .map(userMapper::toResponse)
+                .toList();
 
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Specification<User> spec = createSearchSpecification(request);
-        Page<User> userPage = userRepository.findAll(spec, pageable);
-
-        logger.info("User search completed. Found {} users across {} pages",
-                userPage.getTotalElements(), userPage.getTotalPages());
-
-        Page<UserResponse> dtoPage = userPage.map(userMapper::toResponse);
-        return PageResponse.from(dtoPage);
+        return PageResponse.<UserResponse>builder()
+                .content(content)
+                .page(userPage.getNumber())
+                .size(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .first(userPage.isFirst())
+                .last(userPage.isLast())
+                .build();
     }
 
     @Override
-    @CacheEvict(value = "users", key = "#userId")
+    @Transactional
     public UserResponse updateUser(UUID userId, UpdateUserRequest request) {
-        logger.info("Updating profile for user ID: {}", userId);
-
+        log.info("Updating user {} with request {}", userId, request);
+        validateUserId(userId);
         validateUpdateRequest(request);
 
-        User existingUser = userRepository.findByUserIdAndStatusNot(userId, Status.DELETED)
-                .orElseThrow(() -> {
-                    logger.warn("User update failed: Active user not found with ID: {}", userId);
-                    return new ResourceNotFoundException("User not found with id: " + userId);
-                });
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         if (userRepository.existsByEmailAndUserIdNot(request.email(), userId)) {
-            logger.warn("User update failed: Email {} is already in use by another account", request.email());
+            log.warn("User update failed: email already in use {}", request.email());
             throw new ResourceAlreadyExistsException("Email already in use: " + request.email());
         }
 
-        userMapper.updateEntityFromDto(request, existingUser);
-        User updatedUser = userRepository.save(existingUser);
-
-        logger.info("Successfully updated user profile for ID: {}", userId);
+        userMapper.updateEntityFromDto(request, user);
+        User updatedUser = userRepository.save(user);
+        log.info("User updated successfully: {}", updatedUser.getUserId());
         return userMapper.toResponse(updatedUser);
     }
 
     @Override
-    @CacheEvict(value = "users", key = "#userId")
+    @Transactional
     public UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request) {
-        logger.info("Updating status for user ID: {} to {}", userId, request.status());
+        log.info("Updating status for user {} to {}", userId, request.status());
+        validateUserId(userId);
+        if (request.status() == null) {
+            throw new ValidationException("Status is mandatory");
+        }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    logger.warn("Status update failed: User not found with ID: {}", userId);
-                    return new ResourceNotFoundException("User not found with id: " + userId);
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         user.setStatus(request.status());
         User updatedUser = userRepository.save(user);
-
-        logger.info("Successfully updated status for user ID: {} to {}", userId, request.status());
+        log.info("User status updated successfully for id: {}", updatedUser.getUserId());
         return userMapper.toResponse(updatedUser);
     }
 
     @Override
-    public AuthUser findByEmail(String email) {
-        AuthUser user = userRepository
-                .findByEmail(email)
-                .map(u -> {
-                    return new AuthUser(
-                            u.getFirstName(),
-                            u.getLastName(),
-                            u.getEmail(),
-                            u.getPasswordHash()
-                    );
-                })
-                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
-        return user;
-    }
-
-    @Override
-    @CacheEvict(value = "users", key = "#userId")
+    @Transactional
     public void deleteUser(UUID userId) {
-        logger.info("Request received to soft-delete user ID: {}", userId);
-
+        log.info("Soft deleting user {}", userId);
+        validateUserId(userId);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    logger.warn("Soft delete failed: User not found with ID: {}", userId);
-                    return new ResourceNotFoundException("User not found with id: " + userId);
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         if (user.getStatus() == Status.DELETED) {
-            logger.warn("Soft delete skipped: User ID {} is already deleted", userId);
+            log.warn("Delete failed: user already deleted {}", userId);
             throw new BusinessException("User is already deleted");
         }
 
         user.setStatus(Status.DELETED);
         userRepository.save(user);
-        logger.info("Successfully soft-deleted user with ID: {}", userId);
+        log.info("User soft deleted successfully: {}", userId);
     }
 
     private void validateCreateRequest(CreateUserRequest request) {
-        if (request.password() != null && request.password().length() < 8) {
-            throw new ValidationException("Password must be at least 8 characters long");
+        if (request == null) {
+            throw new InvalidRequestException("Request body is required");
+        }
+        if (request.firstName() == null || request.firstName().isBlank()) {
+            throw new ValidationException("First name is mandatory");
+        }
+        if (request.email() == null || request.email().isBlank()) {
+            throw new ValidationException("Email is mandatory");
+        }
+        if (request.password() == null || request.password().length() < 8) {
+            throw new ValidationException("Password must be at least 8 characters");
         }
         if (request.dateOfBirth() != null && request.dateOfBirth().isAfter(LocalDate.now())) {
             throw new ValidationException("Date of birth cannot be a future date");
+        }
+        if (request.gender() == null) {
+            throw new ValidationException("Gender is mandatory");
         }
     }
 
     private void validateUpdateRequest(UpdateUserRequest request) {
+        if (request == null) {
+            throw new InvalidRequestException("Request body is required");
+        }
+        if (request.firstName() == null || request.firstName().isBlank()) {
+            throw new ValidationException("First name is mandatory");
+        }
+        if (request.email() == null || request.email().isBlank()) {
+            throw new ValidationException("Email is mandatory");
+        }
         if (request.dateOfBirth() != null && request.dateOfBirth().isAfter(LocalDate.now())) {
             throw new ValidationException("Date of birth cannot be a future date");
         }
+        if (request.gender() == null) {
+            throw new ValidationException("Gender is mandatory");
+        }
     }
 
-    private Specification<User> createSearchSpecification(UserSearchRequest request) {
-        return (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
+    private void validateUserId(UUID userId) {
+        if (userId == null) {
+            throw new InvalidRequestException("User id is required");
+        }
+    }
 
-            if (request.keyword() != null && !request.keyword().trim().isEmpty()) {
-                String pattern = "%" + request.keyword().trim().toLowerCase() + "%";
-                Predicate firstNameMatch = criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), pattern);
-                Predicate lastNameMatch = criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), pattern);
-                Predicate emailMatch = criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), pattern);
-                Predicate phoneMatch = criteriaBuilder.like(criteriaBuilder.lower(root.get("phoneNumber")), pattern);
-                predicates.add(criteriaBuilder.or(firstNameMatch, lastNameMatch, emailMatch, phoneMatch));
-            }
+    private Specification<User> buildUserSpecification(UserSearchRequest request) {
+        Specification<User> spec = Specification.where((root, query, cb) -> cb.conjunction());
+        List<Specification<User>> specs = new ArrayList<>();
 
-            if (request.status() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("status"), request.status()));
-            }
+        if (request.keyword() != null && !request.keyword().isBlank()) {
+            String keyword = "%" + request.keyword().toLowerCase() + "%";
+            specs.add((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("firstName")), keyword),
+                    cb.like(cb.lower(root.get("lastName")), keyword),
+                    cb.like(cb.lower(root.get("email")), keyword)
+            ));
+        }
+        if (request.status() != null) {
+            specs.add((root, query, cb) -> cb.equal(root.get("status"), request.status()));
+        }
+        if (request.gender() != null) {
+            specs.add((root, query, cb) -> cb.equal(root.get("gender"), request.gender()));
+        }
+        if (request.emailVerified() != null) {
+            specs.add((root, query, cb) -> cb.equal(root.get("emailVerified"), request.emailVerified()));
+        }
+        if (request.phoneVerified() != null) {
+            specs.add((root, query, cb) -> cb.equal(root.get("phoneVerified"), request.phoneVerified()));
+        }
 
-            if (request.gender() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("gender"), request.gender()));
-            }
+        for (Specification<User> s : specs) {
+            spec = spec.and(s);
+        }
 
-            if (request.emailVerified() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("emailVerified"), request.emailVerified()));
-            }
-
-            if (request.phoneVerified() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("phoneVerified"), request.phoneVerified()));
-            }
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        };
+        return spec;
     }
 }

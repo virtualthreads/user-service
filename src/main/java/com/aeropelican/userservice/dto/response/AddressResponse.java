@@ -2,7 +2,7 @@ package com.aeropelican.userservice.dto.response;
 
 import com.aeropelican.userservice.entity.AddressType;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public record AddressResponse(
@@ -18,10 +18,7 @@ public record AddressResponse(
         String state,
         String country,
         String postalCode,
-        Double latitude,
-        Double longitude,
-        Boolean isDefault,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) {
-}
+        BigDecimal latitude,
+        BigDecimal longitude,
+        Boolean isDefault
+) {}

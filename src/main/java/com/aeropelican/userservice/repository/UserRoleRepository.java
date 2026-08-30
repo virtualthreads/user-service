@@ -1,5 +1,7 @@
 package com.aeropelican.userservice.repository;
 
+import com.aeropelican.userservice.entity.Role;
+import com.aeropelican.userservice.entity.User;
 import com.aeropelican.userservice.entity.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,14 +12,11 @@ import java.util.UUID;
 
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, UUID> {
+    boolean existsByUserAndRole(User user, Role role);
 
-    boolean existsByUser_UserIdAndRole_RoleId(UUID userId, UUID roleId);
+    List<UserRole> findByUser(User user);
 
-    boolean existsByRole_RoleId(UUID roleId);
+    Optional<UserRole> findByUserAndRole(User user, Role role);
 
-    List<UserRole> findByUser_UserId(UUID userId);
-
-    Optional<UserRole> findByUser_UserIdAndRole_RoleId(UUID userId, UUID roleId);
-
-    void deleteByUser_UserIdAndRole_RoleId(UUID userId, UUID roleId);
+    boolean existsByRole(Role role);
 }

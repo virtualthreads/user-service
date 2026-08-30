@@ -4,38 +4,24 @@ import com.aeropelican.userservice.entity.AddressType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
+
 public record UpdateAddressRequest(
-        @NotNull(message = "Address type is mandatory")
-        AddressType addressType,
-
-        @NotBlank(message = "Recipient name is mandatory")
-        String recipientName,
-
+        @NotNull(message = "Address type is mandatory") AddressType addressType,
+        @NotBlank(message = "Recipient name is mandatory") String recipientName,
         String phoneNumber,
-
-        @NotBlank(message = "Address line 1 is mandatory")
-        String addressLine1,
-
+        @NotBlank(message = "Address line 1 is mandatory") String addressLine1,
         String addressLine2,
-
         String landmark,
-
-        @NotBlank(message = "City is mandatory")
-        String city,
-
-        @NotBlank(message = "State is mandatory")
-        String state,
-
-        @NotBlank(message = "Country is mandatory")
-        String country,
-
-        @NotBlank(message = "Postal code is mandatory")
-        String postalCode,
-
-        Double latitude,
-
-        Double longitude,
-
+        @NotBlank(message = "City is mandatory") String city,
+        @NotBlank(message = "State is mandatory") String state,
+        @NotBlank(message = "Country is mandatory") String country,
+        @NotBlank(message = "Postal code is mandatory") String postalCode,
+        BigDecimal latitude,
+        BigDecimal longitude,
         Boolean isDefault
 ) {
+    public UpdateAddressRequest {
+        if (isDefault == null) isDefault = false;
+    }
 }

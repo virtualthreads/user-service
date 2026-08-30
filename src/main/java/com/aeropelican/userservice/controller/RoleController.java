@@ -1,74 +1,59 @@
 package com.aeropelican.userservice.controller;
 
-import com.aeropelican.userservice.dto.response.ApiResponse;
 import com.aeropelican.userservice.dto.request.CreateRoleRequest;
+import com.aeropelican.userservice.dto.response.ApiResponse;
 import com.aeropelican.userservice.dto.response.RoleResponse;
-import com.aeropelican.userservice.dto.request.UpdateRoleRequest;
 import com.aeropelican.userservice.service.RoleService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/roles")
+@RequiredArgsConstructor
+@Slf4j
 public class RoleController {
-
-    private static final Logger logger = LoggerFactory.getLogger(RoleController.class);
 
     private final RoleService roleService;
 
-    public RoleController(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
     @PostMapping
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(@Valid @RequestBody CreateRoleRequest request) {
-        logger.info("REST request to create role with name: {}", request.roleName());
-        RoleResponse createdRole = roleService.createRole(request);
+        log.info("POST /api/v1/roles request received");
+        RoleResponse response = roleService.createRole(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(createdRole, "Role created successfully"));
+                .body(ApiResponse.<RoleResponse>builder().success(true).message("Role created successfully").data(response).timestamp(LocalDateTime.now()).build());
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAllRoles() {
-        logger.info("REST request to fetch all roles");
-        List<RoleResponse> roles = roleService.getAllRoles();
-        return ResponseEntity.ok(ApiResponse.success(roles, "Roles retrieved successfully"));
+        log.info("GET /api/v1/roles request received");
+        return ResponseEntity.ok(ApiResponse.<List<RoleResponse>>builder().success(true).message("Roles fetched successfully").data(roleService.getAllRoles()).timestamp(LocalDateTime.now()).build());
     }
 
     @GetMapping("/{roleId}")
     public ResponseEntity<ApiResponse<RoleResponse>> getRoleById(@PathVariable UUID roleId) {
-        logger.info("REST request to get role by ID: {}", roleId);
-        RoleResponse role = roleService.getRoleById(roleId);
-        return ResponseEntity.ok(ApiResponse.success(role, "Role retrieved successfully"));
+        log.info("GET /api/v1/roles/{} request received", roleId);
+        return ResponseEntity.ok(ApiResponse.<RoleResponse>builder().success(true).message("Role fetched successfully").data(roleService.getRoleById(roleId)).timestamp(LocalDateTime.now()).build());
     }
 
     @PutMapping("/{roleId}")
-    public ResponseEntity<ApiResponse<RoleResponse>> updateRole(
-            @PathVariable UUID roleId,
-            @Valid @RequestBody UpdateRoleRequest request) {
-        logger.info("REST request to update role ID: {}", roleId);
-        RoleResponse updatedRole = roleService.updateRole(roleId, request);
-        return ResponseEntity.ok(ApiResponse.success(updatedRole, "Role updated successfully"));
+    public ResponseEntity<ApiResponse<RoleResponse>> updateRole(@PathVariable UUID roleId,
+                                                              @Valid @RequestBody CreateRoleRequest request) {
+        log.info("PUT /api/v1/roles/{} request received", roleId);
+        return ResponseEntity.ok(ApiResponse.<RoleResponse>builder().success(true).message("Role updated successfully").data(roleService.updateRole(roleId, request)).timestamp(LocalDateTime.now()).build());
     }
 
     @DeleteMapping("/{roleId}")
     public ResponseEntity<ApiResponse<Void>> deleteRole(@PathVariable UUID roleId) {
-        logger.info("REST request to delete role ID: {}", roleId);
+        log.info("DELETE /api/v1/roles/{} request received", roleId);
         roleService.deleteRole(roleId);
-        return ResponseEntity.ok(ApiResponse.success(null, "Role deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Role deleted successfully").timestamp(LocalDateTime.now()).build());
     }
 }
