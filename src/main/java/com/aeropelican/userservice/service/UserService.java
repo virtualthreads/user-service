@@ -21,4 +21,6 @@ public interface UserService {
     UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request);
 
     void deleteUser(UUID userId);
+
+    Object getUserByEmailForAuth(String email);
 }

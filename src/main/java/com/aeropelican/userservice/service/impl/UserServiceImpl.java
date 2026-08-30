@@ -16,6 +16,7 @@ import com.aeropelican.userservice.exception.ValidationException;
 import com.aeropelican.userservice.mapper.UserMapper;
 import com.aeropelican.userservice.repository.UserRepository;
 import com.aeropelican.userservice.service.UserService;
+import com.aeropelican.commonsservice.user.dto.response.UserAuthResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -152,6 +153,40 @@ public class UserServiceImpl implements UserService {
         user.setStatus(Status.DELETED);
         userRepository.save(user);
         log.info("User soft deleted successfully: {}", userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Object getUserByEmailForAuth(String email) {
+        log.info("Fetching user authentication details for email: {}", email);
+        
+        if (email == null || email.isBlank()) {
+            throw new ValidationException("Email is mandatory");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        return new UserAuthResponse(
+                user.getUserId(),
+                user.getEmail(),
+                user.getPasswordHash(),
+                com.aeropelican.commonsservice.user.dto.Status.valueOf(user.getStatus().name())
+        );
+    }
+
+    private Object buildUserAuthResponse(User user) {
+        return new Object() {
+            @Override
+            public String toString() {
+                return "UserAuthResponse{" +
+                        "userId=" + user.getUserId() +
+                        ", email='" + user.getEmail() + '\'' +
+                        ", passwordHash='" + user.getPasswordHash() + '\'' +
+                        ", status=" + user.getStatus() +
+                        '}';
+            }
+        };
     }
 
     private void validateCreateRequest(CreateUserRequest request) {

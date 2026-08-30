@@ -8,6 +8,7 @@ import com.aeropelican.userservice.dto.response.ApiResponse;
 import com.aeropelican.userservice.dto.response.PageResponse;
 import com.aeropelican.userservice.dto.response.UserResponse;
 import com.aeropelican.userservice.service.UserService;
+import com.aeropelican.commonsservice.user.dto.response.UserAuthResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,6 +101,19 @@ public class UserController {
         ApiResponse<Void> apiResponse = ApiResponse.<Void>builder()
                 .success(true)
                 .message("User deleted successfully")
+                .timestamp(LocalDateTime.now())
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/auth/email/{email}")
+    public ResponseEntity<ApiResponse<UserAuthResponse>> getUserByEmailForAuth(@PathVariable String email) {
+        log.info("GET /api/v1/users/auth/email/{} request received", email);
+        UserAuthResponse response = (UserAuthResponse) userService.getUserByEmailForAuth(email);
+        ApiResponse<UserAuthResponse> apiResponse = ApiResponse.<UserAuthResponse>builder()
+                .success(true)
+                .message("User authentication details fetched successfully")
+                .data(response)
                 .timestamp(LocalDateTime.now())
                 .build();
         return ResponseEntity.ok(apiResponse);
