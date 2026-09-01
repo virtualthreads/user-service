@@ -39,6 +39,7 @@ public class UserController {
                         .data(user)
                         .build());
     }
+
     @GetMapping
     public ResponseEntity<PageResponse<UserResponseDTO>> getAllUsers(
             @Valid PageRequestDTO requestDTO) {

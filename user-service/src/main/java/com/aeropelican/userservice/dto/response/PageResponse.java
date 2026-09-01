@@ -12,7 +12,7 @@ public class PageResponse<T> {
     private int page;
     private int size;
     private long totalElement;
-    private  int totalPage;
+    private int totalPage;
     private boolean hasNext;
-    private  boolean hasPrevious;
+    private boolean hasPrevious;
 }

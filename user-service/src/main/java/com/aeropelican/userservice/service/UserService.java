@@ -39,7 +39,6 @@ public class UserService {
     }
 
 
-
     public PageResponse<UserResponseDTO> usersList(PageRequestDTO requestDTO) {
         log.info("Fetching all users");
         Sort sort = requestDTO.getSortDir().equalsIgnoreCase("DESC")
@@ -62,7 +61,7 @@ public class UserService {
     }
 
 
-    public UserResponseDTO registerUser(UserCreateRequestDTO request){
+    public UserResponseDTO registerUser(UserCreateRequestDTO request) {
         log.info("Creating user with name");
 
         User user = new User();
@@ -99,6 +98,7 @@ public class UserService {
         log.info("Role updated successfully with id: {}", userId);
         return UserMapper.toResponseDTO(updatedUser);
     }
+
     public UserResponseDTO deleteUser(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("User not found"));
