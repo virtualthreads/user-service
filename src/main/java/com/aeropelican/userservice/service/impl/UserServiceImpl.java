@@ -1,5 +1,6 @@
 package com.aeropelican.userservice.service.impl;
 
+import com.aeropelican.commonsservice.user.dto.response.RoleResponse;
 import com.aeropelican.userservice.dto.request.CreateUserRequest;
 import com.aeropelican.userservice.dto.request.UpdateUserRequest;
 import com.aeropelican.userservice.dto.request.UpdateUserStatusRequest;
@@ -15,6 +16,8 @@ import com.aeropelican.userservice.exception.ResourceNotFoundException;
 import com.aeropelican.userservice.exception.ValidationException;
 import com.aeropelican.userservice.mapper.UserMapper;
 import com.aeropelican.userservice.repository.UserRepository;
+import com.aeropelican.userservice.service.RoleService;
+import com.aeropelican.userservice.service.UserRoleService;
 import com.aeropelican.userservice.service.UserService;
 import com.aeropelican.commonsservice.user.dto.response.UserAuthResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final UserRoleService userRoleService;
 
     @Override
     @Transactional
@@ -166,12 +170,14 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        List<RoleResponse> roles = userRoleService.getUserRoles(user.getUserId());
 
         return new UserAuthResponse(
                 user.getUserId(),
                 user.getEmail(),
                 user.getPasswordHash(),
-                com.aeropelican.commonsservice.user.dto.Status.valueOf(user.getStatus().name())
+                com.aeropelican.commonsservice.user.dto.Status.valueOf(user.getStatus().name()),
+                roles
         );
     }
 

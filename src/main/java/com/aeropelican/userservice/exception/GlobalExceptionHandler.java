@@ -28,6 +28,13 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", ex.getMessage(), request.getRequestURI(), null);
     }
 
+    @ExceptionHandler(com.aeropelican.commonsservice.exception.ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCommonResourceNotFound(
+            com.aeropelican.commonsservice.exception.ResourceNotFoundException ex, HttpServletRequest request) {
+        log.error("Resource not found: {}", ex.getMessage());
+        return buildError(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", ex.getMessage(), request.getRequestURI(), null);
+    }
+
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleAlreadyExists(ResourceAlreadyExistsException ex, HttpServletRequest request) {
         log.error("Resource already exists: {}", ex.getMessage());
@@ -42,6 +49,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidRequest(InvalidRequestException ex, HttpServletRequest request) {
+        log.error("Invalid request: {}", ex.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(com.aeropelican.commonsservice.exception.InvalidRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleCommonInvalidRequest(
+            com.aeropelican.commonsservice.exception.InvalidRequestException ex, HttpServletRequest request) {
         log.error("Invalid request: {}", ex.getMessage());
         return buildError(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), request.getRequestURI(), null);
     }

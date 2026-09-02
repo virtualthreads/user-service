@@ -2,6 +2,7 @@ package com.aeropelican.userservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private static final String SECRET_KEY = "dfcd39e6f6b95128c5c344ff0b5a3e6f51f11f29af552261bd655de4136d5574";
@@ -35,12 +37,15 @@ public class SecurityConfig {
                 Decoders.BASE64.decode(SECRET_KEY)
         );
 
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        return NimbusJwtDecoder.withSecretKey(key)
+                .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS384)
+                .build();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public/**", "/api/v1/users/auth/email/**").permitAll()
                         .anyRequest().authenticated()
@@ -57,14 +62,21 @@ public class SecurityConfig {
 
         // Default converter maps "scope" claim to SCOPE_ prefixed authorities.
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_"); // if you want "ROLE_" prefix
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
         grantedAuthoritiesConverter.setAuthoritiesClaimName("roles"); // default is "scope", change to match your token
 
         converter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
 
         // If roles are nested (e.g., Keycloak: "realm_access" -> "roles"), use a custom converter:
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            Collection<GrantedAuthority> authorities = grantedAuthoritiesConverter.convert(jwt);
+            Collection<GrantedAuthority> authorities = grantedAuthoritiesConverter.convert(jwt).stream()
+                    .map(authority -> {
+                        String role = authority.getAuthority();
+                        return new SimpleGrantedAuthority(
+                                role.startsWith("ROLE_") ? role : "ROLE_" + role
+                        );
+                    })
+                    .collect(Collectors.toSet());
             // add roles from realm_access.roles (Keycloak) if present
             Object realmAccess = jwt.getClaim("realm_access");
             if (realmAccess instanceof Map) {
@@ -73,7 +85,9 @@ public class SecurityConfig {
                     authorities = Stream.concat(authorities.stream(),
                             ((Collection<?>)roles).stream()
                                     .map(Object::toString)
-                                    .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                                    .map(r -> new SimpleGrantedAuthority(
+                                            r.startsWith("ROLE_") ? r : "ROLE_" + r
+                                    ))
                     ).collect(Collectors.toSet());
                 }
             }
