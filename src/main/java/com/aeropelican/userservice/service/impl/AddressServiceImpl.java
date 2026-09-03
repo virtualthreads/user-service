@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +54,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "Get Address", key = "#addressId")
     public AddressResponse getAddressById(UUID addressId) {
         if (addressId == null) throw new InvalidRequestException("Address id is required");
         Address address = addressRepository.findById(addressId)
@@ -62,6 +64,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "Get User Addresses", key = "#userId")
     public List<AddressResponse> getUserAddresses(UUID userId) {
         if (userId == null) throw new InvalidRequestException("User id is required");
         User user = userRepository.findById(userId)
