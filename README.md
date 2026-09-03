@@ -1,2 +1,2 @@
-# user-service
+# Srikanth Reddy user-service
 Manages user authentication, authorization, and profile operations
