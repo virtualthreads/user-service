@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +66,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "Get User", key = "#userId")
     public UserResponse getUserById(UUID userId) {
         log.info("Fetching user by id: {}", userId);
         validateUserId(userId);
@@ -75,6 +77,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "Search Users", key = "#request")
     public PageResponse<UserResponse> searchUsers(UserSearchRequest request) {
         log.info("Searching users with request: {}", request);
         int page = request.page() == null ? 0 : request.page();
@@ -161,6 +164,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "Get User By Email", key = "#email")
     public Object getUserByEmailForAuth(String email) {
         log.info("Fetching user authentication details for email: {}", email);
         
